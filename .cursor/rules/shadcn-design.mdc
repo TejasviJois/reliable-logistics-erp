@@ -1,0 +1,26 @@
+---
+description: Use shadcn/ui MCP and registry components for design elements
+alwaysApply: true
+---
+
+# shadcn/ui design system
+
+This project uses [shadcn/ui MCP](https://ui.shadcn.com/docs/mcp) for UI primitives.
+
+## Config
+
+- MCP server: `.cursor/mcp.json` → `npx shadcn@latest mcp`
+- Registry config: `components.json` (style `new-york`, aliases under `@/components/ui`)
+- Brand tokens live in `src/app/globals.css` (`--primary` / `--accent` = Reliable red `#E31E24`, sidebar black, secondary blue)
+
+## When building or redesigning UI
+
+1. Prefer existing components in `src/components/ui/` before inventing new markup.
+2. If a component is missing, install via shadcn MCP / CLI (`npx shadcn@latest add <name>`) — do not hand-roll Radix wrappers.
+3. Keep Reliable brand colors; do not replace theme with default shadcn violet/zinc looks.
+4. Import `cn` from `@/lib/utils`, not from the npm `cn` package.
+5. Wrap app tooltips with `TooltipProvider` (already in `src/app/layout.tsx`).
+
+## Installed primitives (use these)
+
+separator, scroll-area, avatar, dropdown-menu, tooltip, sheet, table, tabs, select, dialog, skeleton, progress, label, checkbox, switch, textarea, sonner — plus existing button, card, badge, input, page.

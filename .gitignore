@@ -39,3 +39,10 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# local agent / IDE caches (keep shared Cursor project config)
+.agents/
+skills-lock.json
+.cursor/*
+!.cursor/mcp.json
+!.cursor/rules/

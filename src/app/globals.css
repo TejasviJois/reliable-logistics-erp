@@ -1,26 +1,344 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* Reliable Logistics Solutions brand */
+  --brand-red: #e31e24;
+  --brand-red-dark: #c4181e;
+  --brand-blue: #4b65af;
+  --brand-black: #000000;
+
+  --background: #e9ebf0;
+  --foreground: #0f172a;
+  --card: #ffffff;
+  --card-foreground: #0f172a;
+  --popover: #ffffff;
+  --popover-foreground: #0f172a;
+  --primary: var(--brand-red);
+  --primary-foreground: #ffffff;
+  --secondary: #eef1f8;
+  --secondary-foreground: #1e293b;
+  --muted: #eef0f4;
+  --muted-foreground: #64748b;
+  --border: rgba(15, 23, 42, 0.09);
+  --input: rgba(15, 23, 42, 0.12);
+  --ring: rgba(227, 30, 36, 0.4);
+  --accent: var(--brand-red);
+  --accent-soft: #fdecec;
+  --accent-foreground: #ffffff;
+  --destructive: #b42318;
+  --destructive-foreground: #ffffff;
+  --brand-secondary: var(--brand-blue);
+  --brand-secondary-soft: #eef1f8;
+  --sidebar: #0a0a0a;
+  --sidebar-foreground: #f3f4f6;
+  --sidebar-muted: #9ca3af;
+  --sidebar-active: #161616;
+  --sidebar-primary: var(--brand-red);
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #161616;
+  --sidebar-accent-foreground: #f3f4f6;
+  --sidebar-border: rgba(255, 255, 255, 0.08);
+  --sidebar-ring: rgba(227, 30, 36, 0.45);
+  --danger: #b42318;
+  --warning: #b54708;
+  --success: #027a48;
+  --info: var(--brand-blue);
+  --radius: 0.625rem;
+
+  /* Emil Kowalski motion tokens */
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
+  --ease-drawer: cubic-bezier(0.32, 0.72, 0, 1);
+  --duration-press: 140ms;
+  --duration-fast: 180ms;
+  --duration-ui: 220ms;
+
+  --shadow-xs: 0 1px 2px rgba(15, 23, 42, 0.04);
+  --shadow-sm: 0 1px 2px rgba(15, 23, 42, 0.05),
+    0 0 0 1px rgba(15, 23, 42, 0.03);
+  --shadow-md: 0 8px 24px -12px rgba(15, 23, 42, 0.18),
+    0 0 0 1px rgba(15, 23, 42, 0.04);
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-accent: var(--accent);
+  --color-accent-soft: var(--accent-soft);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-brand-secondary: var(--brand-secondary);
+  --color-brand-secondary-soft: var(--brand-secondary-soft);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-muted: var(--sidebar-muted);
+  --color-sidebar-active: var(--sidebar-active);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-danger: var(--danger);
+  --color-warning: var(--warning);
+  --color-success: var(--success);
+  --color-info: var(--info);
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --font-sans: var(--font-jakarta);
+  --font-mono: var(--font-plex);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+* {
+  box-sizing: border-box;
+}
+
+html {
+  height: 100%;
+  -webkit-tap-highlight-color: transparent;
+  overscroll-behavior: none;
 }
 
 body {
+  min-height: 100%;
+  min-height: 100dvh;
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-jakarta), system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+/* App content plane — not flat white against black sidebar */
+.app-canvas {
+  background:
+    radial-gradient(
+      120% 70% at 100% -5%,
+      rgba(75, 101, 175, 0.1) 0%,
+      transparent 52%
+    ),
+    radial-gradient(
+      90% 55% at -5% 90%,
+      rgba(227, 30, 36, 0.055) 0%,
+      transparent 48%
+    ),
+    linear-gradient(165deg, #e6e8ee 0%, #eef0f4 42%, #e9ebf0 100%);
+}
+
+.app-topbar {
+  background: rgba(255, 255, 255, 0.72);
+}
+
+/* Shared register tables across modules */
+.app-table {
+  border-collapse: collapse;
+}
+
+.app-table thead th {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #94a3b8;
+  white-space: nowrap;
+}
+
+.app-table tbody td {
+  vertical-align: middle;
+}
+
+.app-table tbody tr {
+  transition: background-color var(--duration-fast) ease;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .app-table tbody tr:hover {
+    background: rgba(75, 101, 175, 0.04);
+  }
+}
+
+.font-data {
+  font-family: var(--font-plex), ui-monospace, monospace;
+}
+
+/* Pressable feedback — every button / card action */
+.pressable {
+  transition: transform var(--duration-press) var(--ease-out),
+    background-color var(--duration-fast) ease,
+    border-color var(--duration-fast) ease,
+    box-shadow var(--duration-fast) ease,
+    color var(--duration-fast) ease;
+  touch-action: manipulation;
+  user-select: none;
+}
+
+.pressable:active:not(:disabled) {
+  transform: scale(0.97);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .hover-lift:hover {
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-md);
+  }
+
+  aside a.pressable:hover:not([aria-current="page"]) {
+    background: rgba(255, 255, 255, 0.05);
+  }
+}
+
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(148, 163, 184, 0.7);
+  border-radius: 999px;
+}
+
+/* —— Login (rare / first-time — delight budget OK) —— */
+.login-root {
+  min-height: 100dvh;
+}
+
+.login-brand {
+  background:
+    radial-gradient(120% 80% at 0% 0%, rgba(227, 30, 36, 0.42) 0%, transparent 55%),
+    radial-gradient(90% 70% at 100% 100%, rgba(75, 101, 175, 0.32) 0%, transparent 50%),
+    linear-gradient(165deg, #070707 0%, #121212 48%, #180f10 100%);
+}
+
+.login-brand-grid {
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.035) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.035) 1px, transparent 1px);
+  background-size: 48px 48px;
+  mask-image: linear-gradient(180deg, black 18%, transparent 95%);
+}
+
+.login-brand-routes {
+  background:
+    linear-gradient(
+      115deg,
+      transparent 0%,
+      transparent 38%,
+      rgba(227, 30, 36, 0.5) 38.5%,
+      rgba(227, 30, 36, 0.5) 39%,
+      transparent 39.5%,
+      transparent 62%,
+      rgba(75, 101, 175, 0.38) 62.5%,
+      rgba(75, 101, 175, 0.38) 63%,
+      transparent 63.5%
+    ),
+    linear-gradient(
+      155deg,
+      transparent 0%,
+      transparent 72%,
+      rgba(255, 255, 255, 0.07) 72.5%,
+      rgba(255, 255, 255, 0.07) 73%,
+      transparent 73.5%
+    );
+  opacity: 0.9;
+}
+
+.login-panel {
+  background: linear-gradient(180deg, #fbfcfd 0%, #f2f4f7 100%);
+}
+
+.login-panel-texture {
+  background-image: radial-gradient(
+    rgba(15, 23, 42, 0.03) 0.75px,
+    transparent 0.75px
+  );
+  background-size: 16px 16px;
+  mask-image: linear-gradient(180deg, black, transparent 92%);
+}
+
+@keyframes login-fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes login-account-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.login-fade-up {
+  animation: login-fade-up 280ms var(--ease-out) both;
+}
+
+.login-delay-1 {
+  animation-delay: 40ms;
+}
+
+.login-delay-2 {
+  animation-delay: 80ms;
+}
+
+.login-account-item {
+  animation: login-account-in 220ms var(--ease-out) both;
+}
+
+.login-account-btn {
+  transition: transform var(--duration-press) var(--ease-out),
+    border-color var(--duration-fast) ease,
+    box-shadow var(--duration-fast) ease,
+    background-color var(--duration-fast) ease;
+}
+
+.login-account-btn:active:not(:disabled) {
+  transform: scale(0.985);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .login-account-btn:hover:not(:disabled) {
+    border-color: rgba(227, 30, 36, 0.35);
+    box-shadow: 0 10px 28px -14px rgba(227, 30, 36, 0.35);
+    transform: translateY(-1px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .login-fade-up,
+  .login-account-item {
+    animation: none !important;
+  }
+
+  .pressable:active:not(:disabled),
+  .login-account-btn:active:not(:disabled) {
+    transform: none;
+  }
+
+  aside nav .grid {
+    transition: none !important;
+  }
 }
