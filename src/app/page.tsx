@@ -284,99 +284,101 @@ export default function OperationsOverviewPage() {
       />
       <RoleWorkQueue />
 
-      {/* Executive KPIs — BRD: dockets, tonnage, revenue, vehicles, delivery success */}
-      <p className="mb-2 text-[11px] font-semibold uppercase tracking-[0.1em] text-slate-400">
-        Executive snapshot
-      </p>
-      <div className="mb-5 grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
-        <KPIStat
-          label="Network dockets"
-          value={stats.networkDockets}
-          hint={`${stats.todayShipments} booked today`}
-        />
-        <KPIStat
-          label="Tonnage on books"
-          value={`${stats.tonnageBooked.toFixed(1)} T`}
-          hint={`${formatNumber(stats.packagesLive)} packages`}
-        />
-        <KPIStat
-          label="Revenue billed"
-          value={formatINR(stats.revenue)}
-          hint={`${formatINR(stats.collected)} collected`}
-        />
-        <KPIStat
-          label="Vehicles in transit"
-          value={stats.vehiclesTransit}
-          hint={`${stats.vehiclesAvail} available · ${stats.tripsLive} live trips`}
-        />
-        <KPIStat
-          label="Delivery success"
-          value={`${stats.deliverySuccessPct}%`}
-          hint={`${stats.ofd} out for delivery`}
-          tone={stats.deliverySuccessPct >= 90 ? "success" : "warning"}
-        />
-      </div>
+      <div data-tour="overview-kpis">
+        {/* Executive KPIs — BRD: dockets, tonnage, revenue, vehicles, delivery success */}
+        <p className="mb-2 text-[11px] font-semibold uppercase tracking-[0.1em] text-slate-400">
+          Executive snapshot
+        </p>
+        <div className="mb-5 grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
+          <KPIStat
+            label="Network dockets"
+            value={stats.networkDockets}
+            hint={`${stats.todayShipments} booked today`}
+          />
+          <KPIStat
+            label="Tonnage on books"
+            value={`${stats.tonnageBooked.toFixed(1)} T`}
+            hint={`${formatNumber(stats.packagesLive)} packages`}
+          />
+          <KPIStat
+            label="Revenue billed"
+            value={formatINR(stats.revenue)}
+            hint={`${formatINR(stats.collected)} collected`}
+          />
+          <KPIStat
+            label="Vehicles in transit"
+            value={stats.vehiclesTransit}
+            hint={`${stats.vehiclesAvail} available · ${stats.tripsLive} live trips`}
+          />
+          <KPIStat
+            label="Delivery success"
+            value={`${stats.deliverySuccessPct}%`}
+            hint={`${stats.ofd} out for delivery`}
+            tone={stats.deliverySuccessPct >= 90 ? "success" : "warning"}
+          />
+        </div>
 
-      {/* Cash & commercial */}
-      <p className="mb-2 text-[11px] font-semibold uppercase tracking-[0.1em] text-slate-400">
-        Commercial & cash
-      </p>
-      <div className="mb-5 grid gap-3 sm:grid-cols-2 xl:grid-cols-6">
-        <KPIStat
-          label="Outstanding AR"
-          value={formatINR(stats.outstanding)}
-          tone="warning"
-          hint="Customer receivables"
-        />
-        <KPIStat label="Billing unlocked" value={stats.billable} hint="POD approved · TBB" />
-        <KPIStat label="POD pending" value={stats.podPending} tone={stats.podPending ? "warning" : "default"} />
-        <KPIStat
-          label="Active customers"
-          value={stats.activeCustomers}
-          hint={
-            stats.pendingCustomers
-              ? `${stats.pendingCustomers} awaiting approval`
-              : "All approved"
-          }
-        />
-        <KPIStat
-          label="Vendor hire (THC)"
-          value={formatINR(stats.vendorCost)}
-          hint="Transport cost on books"
-        />
-        <KPIStat
-          label="Gross margin proxy"
-          value={formatINR(stats.grossMargin)}
-          hint="Billed revenue − THC"
-          tone={stats.grossMargin >= 0 ? "success" : "danger"}
-        />
-      </div>
+        {/* Cash & commercial */}
+        <p className="mb-2 text-[11px] font-semibold uppercase tracking-[0.1em] text-slate-400">
+          Commercial & cash
+        </p>
+        <div className="mb-5 grid gap-3 sm:grid-cols-2 xl:grid-cols-6">
+          <KPIStat
+            label="Outstanding AR"
+            value={formatINR(stats.outstanding)}
+            tone="warning"
+            hint="Customer receivables"
+          />
+          <KPIStat label="Billing unlocked" value={stats.billable} hint="POD approved · TBB" />
+          <KPIStat label="POD pending" value={stats.podPending} tone={stats.podPending ? "warning" : "default"} />
+          <KPIStat
+            label="Active customers"
+            value={stats.activeCustomers}
+            hint={
+              stats.pendingCustomers
+                ? `${stats.pendingCustomers} awaiting approval`
+                : "All approved"
+            }
+          />
+          <KPIStat
+            label="Vendor hire (THC)"
+            value={formatINR(stats.vendorCost)}
+            hint="Transport cost on books"
+          />
+          <KPIStat
+            label="Gross margin proxy"
+            value={formatINR(stats.grossMargin)}
+            hint="Billed revenue − THC"
+            tone={stats.grossMargin >= 0 ? "success" : "danger"}
+          />
+        </div>
 
-      {/* Ops health */}
-      <p className="mb-2 text-[11px] font-semibold uppercase tracking-[0.1em] text-slate-400">
-        Operations health
-      </p>
-      <div className="mb-5 grid gap-3 sm:grid-cols-2 xl:grid-cols-6">
-        <KPIStat label="In transit" value={stats.inTransit} />
-        <KPIStat label="Out for delivery" value={stats.ofd} />
-        <KPIStat label="Warehouse queue" value={stats.warehouseQueue} />
-        <KPIStat
-          label="Exceptions"
-          value={stats.exceptions}
-          tone={stats.exceptions ? "danger" : "success"}
-        />
-        <KPIStat
-          label="Open tickets"
-          value={stats.openTickets}
-          hint={stats.p1Tickets ? `${stats.p1Tickets} P1` : "No P1"}
-          tone={stats.p1Tickets ? "danger" : "default"}
-        />
-        <KPIStat
-          label="Fleet doc risk"
-          value={stats.fleetDocRisk}
-          tone={stats.fleetDocRisk ? "warning" : "success"}
-          hint="Insurance / fitness"
-        />
+        {/* Ops health */}
+        <p className="mb-2 text-[11px] font-semibold uppercase tracking-[0.1em] text-slate-400">
+          Operations health
+        </p>
+        <div className="mb-5 grid gap-3 sm:grid-cols-2 xl:grid-cols-6">
+          <KPIStat label="In transit" value={stats.inTransit} />
+          <KPIStat label="Out for delivery" value={stats.ofd} />
+          <KPIStat label="Warehouse queue" value={stats.warehouseQueue} />
+          <KPIStat
+            label="Exceptions"
+            value={stats.exceptions}
+            tone={stats.exceptions ? "danger" : "success"}
+          />
+          <KPIStat
+            label="Open tickets"
+            value={stats.openTickets}
+            hint={stats.p1Tickets ? `${stats.p1Tickets} P1` : "No P1"}
+            tone={stats.p1Tickets ? "danger" : "default"}
+          />
+          <KPIStat
+            label="Fleet doc risk"
+            value={stats.fleetDocRisk}
+            tone={stats.fleetDocRisk ? "warning" : "success"}
+            hint="Insurance / fitness"
+          />
+        </div>
       </div>
 
       {/* Pipeline */}
@@ -552,7 +554,7 @@ export default function OperationsOverviewPage() {
         </Card>
 
         <div className="space-y-4">
-          <Card>
+          <Card data-tour="overview-attention">
             <CardHeader
               subtitle="Owner priorities"
               title="Attention queue"

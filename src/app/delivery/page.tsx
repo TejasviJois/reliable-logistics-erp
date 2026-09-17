@@ -17,6 +17,12 @@ export default function DeliveryPage() {
   const queue = dockets.filter((d) =>
     ["in_transit", "at_hub", "out_for_delivery", "pod_pending"].includes(d.status)
   );
+  const firstOfdId = queue.find((d) =>
+    ["in_transit", "at_hub"].includes(d.status)
+  )?.id;
+  const firstDeliveredId = queue.find(
+    (d) => d.status === "out_for_delivery"
+  )?.id;
 
   return (
     <div>
@@ -40,7 +46,7 @@ export default function DeliveryPage() {
           value={dockets.filter((d) => d.status === "pod_pending").length}
         />
       </div>
-      <Card>
+      <Card data-tour="delivery-board">
         <CardHeader title="Delivery runs" subtitle="Field operations" />
         <div className="overflow-x-auto">
           <table className="app-table w-full text-left text-sm">
@@ -72,12 +78,26 @@ export default function DeliveryPage() {
                     </td>
                     <td className="px-4 py-3 text-right sm:px-5">
                       {["in_transit", "at_hub"].includes(d.status) ? (
-                        <Button size="sm" onClick={() => markOutForDelivery(d.id)}>
+                        <Button
+                          size="sm"
+                          data-tour={
+                            d.id === firstOfdId ? "delivery-ofd" : undefined
+                          }
+                          onClick={() => markOutForDelivery(d.id)}
+                        >
                           Out for delivery
                         </Button>
                       ) : null}
                       {d.status === "out_for_delivery" ? (
-                        <Button size="sm" onClick={() => markDelivered(d.id)}>
+                        <Button
+                          size="sm"
+                          data-tour={
+                            d.id === firstDeliveredId
+                              ? "delivery-delivered"
+                              : undefined
+                          }
+                          onClick={() => markDelivered(d.id)}
+                        >
                           Mark delivered
                         </Button>
                       ) : null}

@@ -1,15 +1,18 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
 import { PageHeader } from "@/components/ui/page";
 import { RoleWorkQueue } from "@/components/role-work-queue";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader } from "@/components/ui/card";
 import { StatusBadge } from "@/components/ui/badge";
+import { ScanLabelDialog } from "@/components/scan-label-dialog";
 import { MODE_LABEL, STATUS_LABEL, STATUS_TONE } from "@/lib/status";
 import { formatNumber } from "@/lib/utils";
 import { useDemoStore } from "@/store/demo-store";
 import { useSessionStore } from "@/store/session-store";
+import type { Docket } from "@/types";
 
 export default function BookingsPage() {
   const dockets = useDemoStore((s) => s.dockets);
@@ -18,23 +21,26 @@ export default function BookingsPage() {
   const account = useSessionStore((s) => s.account);
   const canCreateDocket =
     account?.role === "booking" || account?.role === "management";
+  const [labelDocket, setLabelDocket] = useState<Docket | null>(null);
 
   return (
     <div>
       <PageHeader
         eyebrow="Operations"
         title="Bookings"
-        description="Docket register across the network."
+        description="Docket register across the network. Print scan labels for warehouse."
         actions={
           canCreateDocket ? (
             <Button asChild>
-              <Link href="/bookings/new">+ Create docket</Link>
+              <Link href="/bookings/new" data-tour="bookings-create">
+                + Create docket
+              </Link>
             </Button>
           ) : undefined
         }
       />
       <RoleWorkQueue />
-      <Card>
+      <Card data-tour="bookings-register">
         <CardHeader title="Docket register" subtitle="All bookings" />
         <div className="overflow-x-auto">
           <table className="app-table w-full text-left text-sm">
@@ -47,11 +53,12 @@ export default function BookingsPage() {
                 <th className="px-4 py-2.5">Pkgs</th>
                 <th className="px-4 py-2.5">Chargeable</th>
                 <th className="px-4 py-2.5">Status</th>
+                <th className="px-4 py-2.5">Scan label</th>
                 <th className="px-4 py-2.5 sm:px-5" />
               </tr>
             </thead>
             <tbody>
-              {dockets.map((d) => {
+              {dockets.map((d, index) => {
                 const c = customers.find((x) => x.id === d.customerId);
                 return (
                   <tr key={d.id} className="border-b border-border/70">
@@ -68,11 +75,24 @@ export default function BookingsPage() {
                       {formatNumber(d.chargeableWeightKg)} kg
                     </td>
                     <td className="px-4 py-2.5">
-                      <button onClick={() => openDrawer(d.id)}>
+                      <button type="button" onClick={() => openDrawer(d.id)}>
                         <StatusBadge tone={STATUS_TONE[d.status]}>
                           {STATUS_LABEL[d.status]}
                         </StatusBadge>
                       </button>
+                    </td>
+                    <td className="px-4 py-2.5">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        data-tour={
+                          index === 0 ? "bookings-print-label" : undefined
+                        }
+                        onClick={() => setLabelDocket(d)}
+                      >
+                        View / print barcode
+                      </Button>
                     </td>
                     <td className="px-4 py-2.5 text-right sm:px-5">
                       <Link
@@ -89,6 +109,14 @@ export default function BookingsPage() {
           </table>
         </div>
       </Card>
+
+      <ScanLabelDialog
+        docket={labelDocket}
+        open={!!labelDocket}
+        onOpenChange={(open) => {
+          if (!open) setLabelDocket(null);
+        }}
+      />
     </div>
   );
 }

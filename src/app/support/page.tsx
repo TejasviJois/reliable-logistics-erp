@@ -51,6 +51,7 @@ export default function SupportPage() {
           canEdit ? (
             <Button
               size="sm"
+              data-tour="support-new"
               onClick={() => {
                 setTktForm((f) => ({
                   ...f,
@@ -86,7 +87,7 @@ export default function SupportPage() {
           ).length}
         />
       </div>
-      <div className="grid gap-3.5 xl:grid-cols-2">
+      <div className="grid gap-3.5 xl:grid-cols-2" data-tour="support-queue">
         {tickets.map((t) => {
           const c = customers.find((x) => x.id === t.customerId);
           const d = dockets.find((x) => x.id === t.docketId);

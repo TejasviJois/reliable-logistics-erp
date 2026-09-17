@@ -7,6 +7,8 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Separator } from "@/components/ui/separator";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
 import {
   Select,
   SelectContent,
@@ -21,6 +23,7 @@ import {
 } from "@/components/ui/tooltip";
 import { masterData, useDemoStore } from "@/store/demo-store";
 import { useSessionStore } from "@/store/session-store";
+import { useTutorialStore } from "@/store/tutorial-store";
 import { STATUS_LABEL } from "@/lib/status";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
@@ -33,6 +36,9 @@ export function Topbar() {
   const setBranchId = useDemoStore((s) => s.setBranchId);
   const account = useSessionStore((s) => s.account);
   const signOut = useSessionStore((s) => s.signOut);
+  const modeOn = useTutorialStore((s) => s.modeOn);
+  const setModeOn = useTutorialStore((s) => s.setModeOn);
+  const startTour = useTutorialStore((s) => s.startTour);
   const [open, setOpen] = useState(false);
   const [q, setQ] = useState("");
 
@@ -108,6 +114,30 @@ export function Topbar() {
           </button>
         </div>
         <div className="flex items-center gap-2">
+          <div className="hidden items-center gap-2 rounded-lg border border-border bg-white/80 px-2.5 py-1 sm:flex">
+            <Switch
+              id="tutorial-mode"
+              checked={modeOn}
+              onCheckedChange={(on) => {
+                setModeOn(on);
+                if (on) {
+                  toast.message("Tutorial mode on", {
+                    description:
+                      "Start the floating tour — Next walks each control, Finish shows the next role.",
+                  });
+                  if (account) startTour(account.role);
+                } else {
+                  toast.message("Tutorial mode off");
+                }
+              }}
+            />
+            <Label
+              htmlFor="tutorial-mode"
+              className="cursor-pointer text-[11px] font-semibold text-slate-600"
+            >
+              Tutorial
+            </Label>
+          </div>
           <Button variant="secondary" size="sm" onClick={switchAccount}>
             <UsersRound className="h-3.5 w-3.5" />
             Switch user

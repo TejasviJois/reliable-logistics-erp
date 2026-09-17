@@ -7,6 +7,7 @@ import { RoleWorkQueue } from "@/components/role-work-queue";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, KPIStat } from "@/components/ui/card";
 import { StatusBadge } from "@/components/ui/badge";
+import { Label, Select } from "@/components/ui/input";
 import { STATUS_LABEL, STATUS_TONE } from "@/lib/status";
 import { formatDate, formatDateTime, formatINR } from "@/lib/utils";
 import { useDemoStore } from "@/store/demo-store";
@@ -29,6 +30,7 @@ export default function PodPage() {
   const [selectedDocketId, setSelectedDocketId] = useState(initialDocket);
   const [filter, setFilter] = useState<"all" | "attention" | "approved">("all");
   const [extracting, setExtracting] = useState(false);
+  const [intakeChannel, setIntakeChannel] = useState("WHATSAPP");
 
   const docket = dockets.find((d) => d.id === selectedDocketId);
   const customer = customers.find((c) => c.id === docket?.customerId);
@@ -80,7 +82,7 @@ export default function PodPage() {
       </div>
 
       <div className="grid gap-4 xl:grid-cols-[260px_1fr]">
-        <Card>
+        <Card data-tour="pod-queue">
           <CardHeader title="POD register" subtitle="Queue" />
           <div className="flex gap-1 border-b border-[var(--border)] px-3 py-2">
             {(
@@ -148,10 +150,33 @@ export default function PodPage() {
                 Upload delivery evidence for {docket.number}. Capture receiver,
                 signature, seal and delivery time for verification.
               </p>
+              <div className="mt-4 grid gap-3 sm:grid-cols-2">
+                <div>
+                  <Label>Intake channel</Label>
+                  <Select
+                    value={intakeChannel}
+                    onChange={(e) => setIntakeChannel(e.target.value)}
+                  >
+                    <option value="DIRECT_UPLOAD">Direct upload</option>
+                    <option value="WHATSAPP">WhatsApp</option>
+                    <option value="DRIVER_APP">Driver app</option>
+                  </Select>
+                </div>
+                <div className="flex items-end gap-4 pb-1 text-xs text-slate-600">
+                  <label className="flex items-center gap-1.5">
+                    <input type="checkbox" defaultChecked className="accent-[var(--primary)]" />
+                    Signature
+                  </label>
+                  <label className="flex items-center gap-1.5">
+                    <input type="checkbox" defaultChecked className="accent-[var(--primary)]" />
+                    GPS verified
+                  </label>
+                </div>
+              </div>
               <div className="mt-4 rounded-lg border border-dashed border-border bg-slate-50 p-8 text-center">
                 <p className="text-sm font-medium">POD document preview</p>
                 <p className="mt-1 text-xs text-slate-500">
-                  Demo: simulate WhatsApp / upload intake
+                  Demo: {intakeChannel.replace("_", " ").toLowerCase()} intake
                 </p>
                 {extracting ? (
                   <p className="mt-3 text-xs font-medium text-primary">
@@ -162,6 +187,7 @@ export default function PodPage() {
               <Button
                 className="mt-4"
                 disabled={extracting}
+                data-tour="pod-ingest"
                 onClick={() => {
                   setExtracting(true);
                   window.setTimeout(() => {
@@ -312,7 +338,12 @@ export default function PodPage() {
               </div>
               {pod.status === "extracted" || pod.status === "pending" ? (
                 <div className="flex flex-wrap gap-2 border-t border-[var(--border)] bg-slate-50/80 px-4 py-3.5">
-                  <Button onClick={() => approvePod(pod.id)}>Approve POD</Button>
+                  <Button
+                    data-tour="pod-approve"
+                    onClick={() => approvePod(pod.id)}
+                  >
+                    Approve POD
+                  </Button>
                   <Button
                     variant="secondary"
                     onClick={() => requestPodReview(pod.id)}

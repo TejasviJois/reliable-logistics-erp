@@ -5,6 +5,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { Sidebar } from "@/components/sidebar";
 import { Topbar } from "@/components/topbar";
 import { DetailDrawer } from "@/components/detail-drawer";
+import { TutorialGuide } from "@/components/tutorial-guide";
 import {
   refreshSessionAccount,
   useSessionStore,
@@ -17,6 +18,8 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const [hydrated, setHydrated] = useState(false);
 
   const isLogin = pathname === "/login";
+  const isPublic = pathname.startsWith("/public/");
+  const isBare = isLogin || isPublic;
 
   useEffect(() => {
     let done = false;
@@ -36,15 +39,15 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   }, []);
 
   useEffect(() => {
-    if (!hydrated) return;
+    if (!hydrated || isPublic) return;
     if (!account && !isLogin) {
       router.replace("/login");
     } else if (account && isLogin) {
       router.replace(account.homeHref || "/");
     }
-  }, [account, hydrated, isLogin, router]);
+  }, [account, hydrated, isLogin, isPublic, router]);
 
-  if (isLogin) {
+  if (isBare) {
     return <>{children}</>;
   }
 
@@ -74,6 +77,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         </main>
       </div>
       <DetailDrawer />
+      <TutorialGuide />
     </div>
   );
 }

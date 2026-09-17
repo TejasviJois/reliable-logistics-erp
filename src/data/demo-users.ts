@@ -86,7 +86,7 @@ const ROLE_DEFS: Omit<
     department: "Marketing",
     primaryFlow:
       "Campaign → leads → qualification → handoff to sales → ROI attribution",
-    navHrefs: ["/marketing", "/crm", "/customers"],
+    navHrefs: ["/marketing", "/crm", "/customers", "/tutorials"],
     homeHref: "/marketing",
   },
   {
@@ -95,7 +95,7 @@ const ROLE_DEFS: Omit<
     department: "Sales",
     primaryFlow:
       "Customer creation → admin approval → account management → performance",
-    navHrefs: ["/crm", "/customers", "/contracts", "/bookings"],
+    navHrefs: ["/crm", "/customers", "/contracts", "/bookings", "/tutorials"],
     homeHref: "/customers",
   },
   {
@@ -104,7 +104,7 @@ const ROLE_DEFS: Omit<
     department: "Booking",
     primaryFlow:
       "Booking source → docket → shipment details → docket creation",
-    navHrefs: ["/bookings", "/customers", "/tracking", "/warehouse"],
+    navHrefs: ["/bookings", "/customers", "/tracking", "/warehouse", "/tutorials"],
     homeHref: "/bookings",
   },
   {
@@ -112,7 +112,7 @@ const ROLE_DEFS: Omit<
     roleLabel: "Warehouse / Hub Operator",
     department: "Warehouse",
     primaryFlow: "Label → scan → inward → outward → manifest",
-    navHrefs: ["/warehouse", "/bookings", "/tracking"],
+    navHrefs: ["/warehouse", "/bookings", "/tracking", "/tutorials"],
     homeHref: "/warehouse",
   },
   {
@@ -121,7 +121,7 @@ const ROLE_DEFS: Omit<
     department: "Traffic",
     primaryFlow:
       "Pending load → planning → vehicle / vendor → dispatch → transit · THC/BTH",
-    navHrefs: ["/traffic", "/tracking", "/fleet", "/vendor-costs"],
+    navHrefs: ["/traffic", "/tracking", "/fleet", "/vendor-costs", "/tutorials"],
     homeHref: "/traffic",
   },
   {
@@ -130,7 +130,7 @@ const ROLE_DEFS: Omit<
     department: "Delivery",
     primaryFlow:
       "Outward for delivery → delivery run → consignee → signed POD upload",
-    navHrefs: ["/delivery", "/tracking", "/pod"],
+    navHrefs: ["/delivery", "/tracking", "/pod", "/tutorials"],
     homeHref: "/delivery",
   },
   {
@@ -139,7 +139,7 @@ const ROLE_DEFS: Omit<
     department: "POD",
     primaryFlow:
       "POD intake → OCR / mapping → review → approve / reject → billing unlock",
-    navHrefs: ["/pod", "/delivery", "/billing", "/tracking"],
+    navHrefs: ["/pod", "/delivery", "/billing", "/tracking", "/tutorials"],
     homeHref: "/pod",
   },
   {
@@ -148,7 +148,7 @@ const ROLE_DEFS: Omit<
     department: "Support",
     primaryFlow:
       "Tracking → customer status → issues → charges → tickets / reports",
-    navHrefs: ["/support", "/customers", "/tracking", "/bookings"],
+    navHrefs: ["/support", "/customers", "/tracking", "/bookings", "/tutorials"],
     homeHref: "/support",
   },
   {
@@ -157,7 +157,7 @@ const ROLE_DEFS: Omit<
     department: "Billing",
     primaryFlow:
       "Billing queue → freight / GST / e-invoice → invoice lock & distribute",
-    navHrefs: ["/billing", "/pod", "/customers", "/contracts"],
+    navHrefs: ["/billing", "/pod", "/customers", "/contracts", "/tutorials"],
     homeHref: "/billing",
   },
   {
@@ -166,7 +166,7 @@ const ROLE_DEFS: Omit<
     department: "Collections",
     primaryFlow:
       "Receipt → allocation → settlement → outstanding / aging",
-    navHrefs: ["/receivables", "/billing", "/customers"],
+    navHrefs: ["/receivables", "/billing", "/customers", "/tutorials"],
     homeHref: "/receivables",
   },
   {
@@ -175,7 +175,7 @@ const ROLE_DEFS: Omit<
     department: "Fleet",
     primaryFlow:
       "Vehicle master → docs / expiry → availability → trip / maintenance",
-    navHrefs: ["/fleet", "/traffic", "/vendors", "/tracking"],
+    navHrefs: ["/fleet", "/traffic", "/vendors", "/tracking", "/tutorials"],
     homeHref: "/fleet",
   },
   {
@@ -184,7 +184,7 @@ const ROLE_DEFS: Omit<
     department: "Procurement",
     primaryFlow:
       "PR → RFQ → PO → goods receipt → vendor bill → AP handoff",
-    navHrefs: ["/procurement", "/vendors", "/vendor-costs"],
+    navHrefs: ["/procurement", "/vendors", "/vendor-costs", "/tutorials"],
     homeHref: "/procurement",
   },
   {
@@ -193,7 +193,7 @@ const ROLE_DEFS: Omit<
     department: "HR",
     primaryFlow:
       "Employee master → attendance / leave → payroll → offboarding → IT access",
-    navHrefs: ["/hr", "/portals/employee", "/admin"],
+    navHrefs: ["/hr", "/portals/employee", "/admin", "/tutorials"],
     homeHref: "/hr",
   },
   {
@@ -202,7 +202,7 @@ const ROLE_DEFS: Omit<
     department: "IT",
     primaryFlow:
       "Access / devices → support tickets → resolution → SLA · offboarding revoke",
-    navHrefs: ["/admin", "/audit", "/portals/employee"],
+    navHrefs: ["/admin", "/audit", "/portals/employee", "/tutorials"],
     homeHref: "/admin",
   },
   {
@@ -211,7 +211,7 @@ const ROLE_DEFS: Omit<
     department: "Legal",
     primaryFlow:
       "Licenses / agreements → expiry → renewal → contract review",
-    navHrefs: ["/compliance", "/contracts", "/audit", "/customers"],
+    navHrefs: ["/compliance", "/contracts", "/audit", "/customers", "/tutorials"],
     homeHref: "/compliance",
   },
 ];

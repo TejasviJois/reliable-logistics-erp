@@ -5,6 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
+  BookOpen,
   Building2,
   ChevronDown,
   ClipboardList,
@@ -91,6 +92,7 @@ const groups = [
     label: "Governance",
     items: [
       { href: "/admin", label: "Administration", icon: Shield },
+      { href: "/tutorials", label: "Role tutorials", icon: BookOpen },
       { href: "/audit", label: "Audit", icon: ScrollText },
       { href: "/reports", label: "Reports & MIS", icon: BarChart3 },
       { href: "/compliance", label: "Compliance", icon: Shield },

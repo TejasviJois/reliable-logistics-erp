@@ -61,7 +61,7 @@ export default function CreateDocketPage() {
       setGateMsg(result.message);
       return;
     }
-    router.push(`/bookings/${result.id}`);
+    router.push(`/bookings/${result.id}?label=1`);
   };
 
   return (

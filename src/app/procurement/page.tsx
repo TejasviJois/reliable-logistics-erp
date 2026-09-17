@@ -52,6 +52,7 @@ export default function ProcurementPage() {
           canEdit ? (
             <Button
               size="sm"
+              data-tour="proc-new-po"
               onClick={() => {
                 setForm((f) => ({
                   ...f,
@@ -102,7 +103,11 @@ export default function ProcurementPage() {
                 </tr>
               </thead>
               <tbody>
-                {pos.map((po) => (
+                {pos.map((po) => {
+                  const isFirstAdvance =
+                    po.status !== "closed" &&
+                    pos.find((p) => p.status !== "closed")?.id === po.id;
+                  return (
                   <tr key={po.id} className="border-b border-[var(--border)]/70">
                     <td className="px-4 py-3 sm:px-5">
                       <p className="font-data text-xs text-slate-400">{po.number}</p>
@@ -139,6 +144,9 @@ export default function ProcurementPage() {
                             <Button
                               size="sm"
                               variant="secondary"
+                              data-tour={
+                                isFirstAdvance ? "proc-advance" : undefined
+                              }
                               onClick={() => {
                                 advancePO(po.id);
                                 toast.success("PO advanced");
@@ -165,7 +173,8 @@ export default function ProcurementPage() {
                       )}
                     </td>
                   </tr>
-                ))}
+                  );
+                })}
               </tbody>
             </table>
           </div>

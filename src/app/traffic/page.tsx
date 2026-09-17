@@ -145,7 +145,7 @@ export default function TrafficPage() {
       </div>
 
       <div className="grid gap-3.5 xl:grid-cols-[1.2fr_1fr]">
-        <Card>
+        <Card data-tour="traffic-load">
           <CardHeader title="Traffic load board" subtitle="Pending load" />
           <div className="overflow-x-auto">
             <table className="app-table w-full text-left text-sm">
@@ -201,7 +201,7 @@ export default function TrafficPage() {
         </Card>
 
         <div className="space-y-3.5">
-          <Card>
+          <Card data-tour="traffic-vehicle">
             <CardHeader
               title="Vehicle matching"
               subtitle="Ranked recommendation"
@@ -261,7 +261,11 @@ export default function TrafficPage() {
                   ))}
                 </ul>
               ) : null}
-              <Button className="w-full" onClick={onDispatch}>
+              <Button
+                className="w-full"
+                data-tour="traffic-dispatch"
+                onClick={onDispatch}
+              >
                 Confirm dispatch
               </Button>
               {dispatchedMsg ? (

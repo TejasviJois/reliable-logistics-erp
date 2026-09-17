@@ -97,7 +97,7 @@ export default function BillingPage() {
 
       <div className="grid gap-3.5 xl:grid-cols-[1fr_340px]">
         <div className="space-y-3.5">
-          <Card>
+          <Card data-tour="billing-eligible">
             <CardHeader
               title="Billing queue"
               subtitle="Eligible after POD approval"
@@ -196,7 +196,11 @@ export default function BillingPage() {
                   {STATUS_LABEL[selected.status]}
                 </p>
               ) : null}
-              <Button className="mt-4" onClick={onGenerate}>
+              <Button
+                className="mt-4"
+                data-tour="billing-generate"
+                onClick={onGenerate}
+              >
                 Generate and save invoice
               </Button>
               {msg ? <p className="mt-2 text-xs font-medium text-primary">{msg}</p> : null}
@@ -214,10 +218,11 @@ export default function BillingPage() {
                     <th className="px-4 py-2">Customer</th>
                     <th className="px-4 py-2">Total</th>
                     <th className="px-4 py-2">Status</th>
+                    <th className="px-4 py-2">Action</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {invoices.map((i) => {
+                  {invoices.map((i, index) => {
                     const c = customers.find((x) => x.id === i.customerId);
                     return (
                       <tr key={i.id} className="border-b border-border/70">
@@ -240,6 +245,36 @@ export default function BillingPage() {
                           >
                             {i.status.replace("_", " ")}
                           </StatusBadge>
+                        </td>
+                        <td className="px-4 py-2.5">
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            data-tour={
+                              index === 0 ? "billing-print" : undefined
+                            }
+                            onClick={() => {
+                              const win = window.open("", "_blank", "noopener,width=720,height=900");
+                              if (!win) return;
+                              win.document.write(`<!doctype html><html><head><title>${i.number}</title>
+<style>body{font-family:system-ui;margin:32px;color:#0f172a}h1{font-size:22px}table{width:100%;border-collapse:collapse;margin-top:16px}td,th{border-bottom:1px solid #e2e8f0;padding:8px;text-align:left;font-size:13px}.muted{color:#64748b;font-size:12px}</style></head><body>
+<p class="muted">RELIABLE LOGISTICS · TAX INVOICE</p>
+<h1>${i.number}</h1>
+<p>Bill to: <strong>${c?.name ?? "—"}</strong><br/>GSTIN ${c?.gstin ?? "—"}</p>
+<p class="muted">Invoice ${i.invoiceDate} · Due ${i.dueDate} · HSN ${i.hsn ?? "996511"}</p>
+<table><tr><th>Description</th><th>Amount</th></tr>
+<tr><td>Taxable value</td><td>${formatINR(i.subtotal)}</td></tr>
+<tr><td>GST</td><td>${formatINR(i.gst)}</td></tr>
+<tr><td><strong>Total</strong></td><td><strong>${formatINR(i.total)}</strong></td></tr>
+</table>
+<script>window.onload=()=>window.print()</script>
+</body></html>`);
+                              win.document.close();
+                            }}
+                          >
+                            View / Print
+                          </Button>
                         </td>
                       </tr>
                     );

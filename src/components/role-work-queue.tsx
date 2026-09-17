@@ -1,10 +1,11 @@
 "use client";
 
 import Link from "next/link";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, BookOpen } from "lucide-react";
 import { roleQueueFor, type RoleQueueItem } from "@/data/role-work";
 import { useSessionStore } from "@/store/session-store";
 import { useDemoStore } from "@/store/demo-store";
+import { useTutorialStore } from "@/store/tutorial-store";
 import { cn } from "@/lib/utils";
 
 export function RoleWorkQueue({ className }: { className?: string }) {
@@ -14,32 +15,36 @@ export function RoleWorkQueue({ className }: { className?: string }) {
   const tickets = useDemoStore((s) => s.tickets);
   const vehicles = useDemoStore((s) => s.vehicles);
 
-  if (!account || account.role === "admin") return null;
+  if (!account) return null;
 
-  const items = roleQueueFor(account.role, {
-    docketsPendingScan: dockets.filter((d) =>
-      ["booked", "warehouse"].includes(d.status)
-    ).length,
-    readyToDispatch: dockets.filter(
-      (d) =>
-        ["booked", "warehouse"].includes(d.status) &&
-        d.boxes.length > 0 &&
-        d.boxes.every((b) => b.scanned)
-    ).length,
-    ofdCount: dockets.filter((d) => d.status === "out_for_delivery").length,
-    podPending: pods.filter(
-      (p) => p.status === "pending" || p.status === "extracted"
-    ).length,
-    billable: dockets.filter((d) => d.status === "billing_eligible").length,
-    openTickets: tickets.filter(
-      (t) => t.status === "open" || t.status === "in_progress"
-    ).length,
-    fleetExpiring: vehicles.filter(
-      (v) => v.docs.insurance === "Expiring" || v.docs.fitness === "Due"
-    ).length,
-  });
-
-  if (!items.length) return null;
+  const items =
+    account.role === "admin"
+      ? []
+      : roleQueueFor(account.role, {
+          docketsPendingScan: dockets.filter((d) =>
+            ["booked", "warehouse"].includes(d.status)
+          ).length,
+          readyToDispatch: dockets.filter(
+            (d) =>
+              ["booked", "warehouse"].includes(d.status) &&
+              d.boxes.length > 0 &&
+              d.boxes.every((b) => b.scanned)
+          ).length,
+          ofdCount: dockets.filter((d) => d.status === "out_for_delivery")
+            .length,
+          podPending: pods.filter(
+            (p) => p.status === "pending" || p.status === "extracted"
+          ).length,
+          billable: dockets.filter((d) => d.status === "billing_eligible")
+            .length,
+          openTickets: tickets.filter(
+            (t) => t.status === "open" || t.status === "in_progress"
+          ).length,
+          fleetExpiring: vehicles.filter(
+            (v) =>
+              v.docs.insurance === "Expiring" || v.docs.fitness === "Due"
+          ).length,
+        });
 
   return (
     <div
@@ -48,17 +53,44 @@ export function RoleWorkQueue({ className }: { className?: string }) {
         className
       )}
     >
-      <div className="mb-2 flex items-center justify-between gap-2">
+      <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
         <p className="text-[11px] font-semibold uppercase tracking-[0.1em] text-accent">
           Your work today · {account.roleLabel}
         </p>
-        <p className="text-[11px] text-slate-500">{account.branchLabel}</p>
+        <div className="flex items-center gap-3">
+          <Link
+            href={`/tutorials?role=${account.role}`}
+            className="inline-flex items-center gap-1 text-[11px] font-semibold text-primary hover:underline"
+            onClick={(e) => {
+              e.preventDefault();
+              useTutorialStore.getState().setModeOn(true);
+              useTutorialStore.getState().startTour(account.role);
+            }}
+          >
+            <BookOpen className="size-3" />
+            Start guided tour
+          </Link>
+          <p className="text-[11px] text-slate-500">{account.branchLabel}</p>
+        </div>
       </div>
-      <ul className="grid gap-2 sm:grid-cols-2 xl:grid-cols-3">
-        {items.map((item) => (
-          <QueueChip key={item.id} item={item} />
-        ))}
-      </ul>
+      {items.length ? (
+        <ul className="grid gap-2 sm:grid-cols-2 xl:grid-cols-3">
+          {items.map((item) => (
+            <QueueChip key={item.id} item={item} />
+          ))}
+        </ul>
+      ) : account.role === "admin" ? (
+        <p className="text-xs text-slate-600">
+          Super User — open{" "}
+          <Link
+            href="/tutorials?role=admin"
+            className="font-semibold text-primary hover:underline"
+          >
+            Admin tutorial
+          </Link>{" "}
+          for features, then follow the shipment spine handoffs.
+        </p>
+      ) : null}
     </div>
   );
 }

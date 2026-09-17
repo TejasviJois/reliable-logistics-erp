@@ -54,7 +54,11 @@ export default function HrPage() {
         description="Employee master, leave approvals and payroll runs for the hub."
         actions={
           canEdit ? (
-            <Button size="sm" onClick={() => setEmpOpen(true)}>
+            <Button
+              size="sm"
+              data-tour="hr-new-employee"
+              onClick={() => setEmpOpen(true)}
+            >
               + Employee
             </Button>
           ) : undefined
@@ -136,7 +140,7 @@ export default function HrPage() {
         </Card>
 
         <div className="space-y-3.5">
-          <Card>
+          <Card data-tour="hr-leave">
             <CardHeader title="Leave requests" subtitle="Approvals" />
             <ul className="divide-y divide-border">
               {leaveRequests.map((l) => (
@@ -189,7 +193,7 @@ export default function HrPage() {
             </ul>
           </Card>
 
-          <Card>
+          <Card data-tour="hr-payroll">
             <CardHeader title="Payroll runs" subtitle="Monthly cycles" />
             <ul className="divide-y divide-border">
               {payrollRuns.map((p) => (

@@ -174,6 +174,9 @@ export interface Trip {
   lng: number;
   checkpoints: { label: string; at: string; done: boolean }[];
   estimatedCost: number;
+  delayed?: boolean;
+  publicToken?: string;
+  customerUpdates?: TripCustomerUpdate[];
 }
 
 export interface Manifest {
@@ -181,10 +184,87 @@ export interface Manifest {
   code: string;
   tripId: string;
   docketIds: string[];
+  vehicleReg?: string;
+  driverName?: string;
+  originHub?: string;
+  destinationHub?: string;
   ewayStatus: "pending" | "generated" | "failed";
   ewayNumber?: string;
   status: "draft" | "generated" | "dispatched";
   createdAt: string;
+}
+
+export interface WarehouseException {
+  id: string;
+  docketId: string;
+  scanCode: string;
+  type: "DAMAGE" | "SHORTAGE" | "EXCESS" | "MISROUTED";
+  severity: "HIGH" | "MEDIUM" | "LOW";
+  hub: string;
+  remarks: string;
+  status: "open" | "investigating" | "closed";
+  createdAt: string;
+}
+
+export interface HubScanEvent {
+  id: string;
+  docketId: string;
+  barcode: string;
+  movement: "SCAN_INWARD" | "SCAN_OUTWARD";
+  hub: string;
+  packages: number;
+  weightKg?: number;
+  condition: "GOOD" | "DAMAGED" | "OPEN" | "WET" | "SHORT";
+  remarks?: string;
+  at: string;
+}
+
+export interface BTH {
+  id: string;
+  number: string;
+  thcId: string;
+  balanceAmount: number;
+  podStatus: "RECEIVED" | "PENDING" | "NOT_REQUIRED";
+  additionalCharges: { type: string; amount: number }[];
+  status:
+    | "pending_accounts"
+    | "pending_payment"
+    | "paid"
+    | "completed"
+    | "hold"
+    | "rejected";
+  utr?: string;
+  createdAt: string;
+}
+
+export interface NetworkLocation {
+  id: string;
+  code: string;
+  name: string;
+  type: "REGION" | "BRANCH" | "BOOKING_OFFICE" | "TRANSSHIPMENT_HUB";
+  region: string;
+  state: string;
+  city: string;
+  pin: string;
+  parentId?: string;
+}
+
+export interface TariffZone {
+  id: string;
+  customerId: string;
+  mode: TransportMode;
+  name: string;
+  basis: "CITY" | "STATE";
+  members: string;
+  ratePerKg: number;
+  minFreight: number;
+  cftFactor: number;
+}
+
+export interface TripCustomerUpdate {
+  at: string;
+  message: string;
+  channel: "SMS" | "EMAIL" | "WHATSAPP" | "PORTAL";
 }
 
 export interface POD {

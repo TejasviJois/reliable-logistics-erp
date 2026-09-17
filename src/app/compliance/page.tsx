@@ -48,7 +48,11 @@ export default function CompliancePage() {
         description="Licenses, permits, insurance and contract vault with expiry control."
         actions={
           canEdit ? (
-            <Button size="sm" onClick={() => setDocOpen(true)}>
+            <Button
+              size="sm"
+              data-tour="compliance-new"
+              onClick={() => setDocOpen(true)}
+            >
               + Document
             </Button>
           ) : undefined

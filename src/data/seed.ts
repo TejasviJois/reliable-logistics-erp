@@ -1,20 +1,24 @@
 import type {
   AuditEvent,
   Branch,
+  BTH,
   Contract,
   Customer,
   Docket,
   Driver,
   Invoice,
   Manifest,
+  NetworkLocation,
   POD,
   Receipt,
+  TariffZone,
   THC,
   Ticket,
   Trip,
   User,
   Vendor,
   Vehicle,
+  WarehouseException,
 } from "@/types";
 
 export const branches: Branch[] = [
@@ -617,6 +621,8 @@ export const seedTrips: Trip[] = [
       { label: "Arrive Chennai Hub", at: "", done: false },
     ],
     estimatedCost: 9200,
+    publicToken: "trk-dk-10231",
+    customerUpdates: [],
   },
   {
     id: "trip-2",
@@ -641,6 +647,14 @@ export const seedTrips: Trip[] = [
       { label: "Arrive Hyderabad Hub", at: "", done: false },
     ],
     estimatedCost: 14500,
+    publicToken: "trk-chn-hyd-10218",
+    customerUpdates: [
+      {
+        at: "2026-09-16T14:30:00+05:30",
+        message: "Crossed Nellore — ETA Hyderabad 22:30",
+        channel: "SMS",
+      },
+    ],
   },
   {
     id: "trip-3",
@@ -954,5 +968,126 @@ export const seedAudit: AuditEvent[] = [
     action: "Approved POD",
     previous: "POD Pending",
     next: "POD Approved",
+  },
+];
+
+export const seedNetworkLocations: NetworkLocation[] = [
+  {
+    id: "loc-south",
+    code: "REG-SOUTH",
+    name: "South Region",
+    type: "REGION",
+    region: "South",
+    state: "KA",
+    city: "Bengaluru",
+    pin: "560001",
+  },
+  {
+    id: "loc-blr",
+    code: "BR-BLR",
+    name: "Bengaluru Hub",
+    type: "BRANCH",
+    region: "South",
+    state: "KA",
+    city: "Bengaluru",
+    pin: "560100",
+    parentId: "loc-south",
+  },
+  {
+    id: "loc-chn",
+    code: "BR-CHN",
+    name: "Chennai Hub",
+    type: "BRANCH",
+    region: "South",
+    state: "TN",
+    city: "Chennai",
+    pin: "600001",
+    parentId: "loc-south",
+  },
+  {
+    id: "loc-hyd",
+    code: "BR-HYD",
+    name: "Hyderabad Hub",
+    type: "BRANCH",
+    region: "South",
+    state: "TS",
+    city: "Hyderabad",
+    pin: "500001",
+    parentId: "loc-south",
+  },
+  {
+    id: "loc-blr-bo",
+    code: "BO-BLR-WH",
+    name: "Whitefield Booking Office",
+    type: "BOOKING_OFFICE",
+    region: "South",
+    state: "KA",
+    city: "Bengaluru",
+    pin: "560066",
+    parentId: "loc-blr",
+  },
+  {
+    id: "loc-hosur",
+    code: "TH-HOSUR",
+    name: "Hosur Transshipment",
+    type: "TRANSSHIPMENT_HUB",
+    region: "South",
+    state: "TN",
+    city: "Hosur",
+    pin: "635109",
+    parentId: "loc-south",
+  },
+];
+
+export const seedWarehouseExceptions: WarehouseException[] = [
+  {
+    id: "wex-1",
+    docketId: "dk-10190",
+    scanCode: "BX-10190-03",
+    type: "DAMAGE",
+    severity: "HIGH",
+    hub: "Bengaluru Hub",
+    remarks: "Corner crush on carton 3 — photo attached in remarks",
+    status: "open",
+    createdAt: "2026-09-16T11:20:00+05:30",
+  },
+];
+
+export const seedBths: BTH[] = [
+  {
+    id: "bth-1",
+    number: "BTH-2026-0001",
+    thcId: "thc-1",
+    balanceAmount: 9500,
+    podStatus: "RECEIVED",
+    additionalCharges: [{ type: "UNLOADING", amount: 500 }],
+    status: "completed",
+    utr: "UTR4829103341",
+    createdAt: "2026-09-17T10:00:00+05:30",
+  },
+];
+
+export const seedTariffZones: TariffZone[] = [
+  {
+    id: "tz-1",
+    customerId: "cus-meridian",
+    mode: "PTL",
+    name: "South Metro",
+    basis: "CITY",
+    members: "Bengaluru, Chennai, Hyderabad, Mysuru",
+    ratePerKg: 18,
+    minFreight: 1200,
+    cftFactor: 7,
+  },
+  {
+    id: "tz-2",
+    customerId: "cus-meridian",
+    mode: "FTL",
+    name: "KA–TN Corridor",
+    basis: "STATE",
+    members: "KA, TN",
+    ratePerKg: 0,
+    minFreight: 14500,
+    cftFactor: 0,
   },
 ];

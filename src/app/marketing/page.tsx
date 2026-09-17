@@ -51,10 +51,19 @@ export default function MarketingPage() {
         actions={
           canEdit ? (
             <>
-              <Button variant="secondary" size="sm" onClick={() => setLeadOpen(true)}>
+              <Button
+                variant="secondary"
+                size="sm"
+                data-tour="marketing-new-lead"
+                onClick={() => setLeadOpen(true)}
+              >
                 + Lead
               </Button>
-              <Button size="sm" onClick={() => setCampOpen(true)}>
+              <Button
+                size="sm"
+                data-tour="marketing-new-campaign"
+                onClick={() => setCampOpen(true)}
+              >
                 + Campaign
               </Button>
             </>
@@ -86,7 +95,11 @@ export default function MarketingPage() {
         <Card className="xl:col-span-3">
           <CardHeader title="Campaigns" subtitle="Pipeline" />
           <ul className="divide-y divide-border">
-            {campaigns.map((c) => (
+            {campaigns.map((c) => {
+              const isFirstLaunch =
+                c.status === "planned" &&
+                campaigns.find((x) => x.status === "planned")?.id === c.id;
+              return (
               <li
                 key={c.id}
                 className="flex flex-wrap items-start justify-between gap-3 px-4 py-3 sm:px-5"
@@ -117,6 +130,9 @@ export default function MarketingPage() {
                         <Button
                           size="sm"
                           variant="outline"
+                          data-tour={
+                            isFirstLaunch ? "marketing-launch" : undefined
+                          }
                           onClick={() => {
                             launchCampaign(c.id);
                             toast.success("Campaign live");
@@ -153,14 +169,15 @@ export default function MarketingPage() {
                   ) : null}
                 </div>
               </li>
-            ))}
+              );
+            })}
           </ul>
         </Card>
 
         <Card className="xl:col-span-2">
           <CardHeader title="Lead handoff" subtitle="To Sales" />
           <ul className="divide-y divide-border">
-            {leads.slice(0, 6).map((l) => (
+            {leads.slice(0, 6).map((l, index) => (
               <li
                 key={l.id}
                 className="flex items-start justify-between gap-2 px-4 py-3 sm:px-5"
@@ -175,6 +192,7 @@ export default function MarketingPage() {
                   <Button
                     size="sm"
                     variant="outline"
+                    data-tour={index === 0 ? "marketing-handoff" : undefined}
                     onClick={() => {
                       handoffLead(l.id);
                       toast.success("Handed to Sales");

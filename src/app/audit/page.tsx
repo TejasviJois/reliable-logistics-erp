@@ -17,7 +17,7 @@ export default function AuditPage() {
       />
       <Card>
         <CardHeader title="Recent events" subtitle="User · entity · old → new" />
-        <div className="px-1 pb-2 sm:px-2">
+        <div className="px-1 pb-2 sm:px-2" data-tour="audit-table">
           <ActivityFeed
             events={audit.map((a) => ({
               ...a,

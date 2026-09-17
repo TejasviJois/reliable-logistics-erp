@@ -6,6 +6,8 @@ import { RoleWorkQueue } from "@/components/role-work-queue";
 import { Card, CardHeader, KPIStat } from "@/components/ui/card";
 import { StatusBadge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Input, Label, Select } from "@/components/ui/input";
+import { EntityFormSheet } from "@/components/entity-form-sheet";
 import {
   ACCESS_MODULES,
   DEFAULT_ROLE_ACCESS,
@@ -18,11 +20,31 @@ import {
   type DemoAccount,
   type DemoRole,
 } from "@/data/demo-users";
+import { cn, formatINR } from "@/lib/utils";
 import { useAccessStore } from "@/store/access-store";
+import { useDemoStore } from "@/store/demo-store";
 import { useSessionStore } from "@/store/session-store";
-import { cn } from "@/lib/utils";
+import { toast } from "sonner";
+import type { NetworkLocation } from "@/types";
 
-type Tab = "roles" | "users";
+type Tab = "roles" | "users" | "network" | "executive";
+
+const LOCATION_TYPES: NetworkLocation["type"][] = [
+  "REGION",
+  "BRANCH",
+  "BOOKING_OFFICE",
+  "TRANSSHIPMENT_HUB",
+];
+
+const emptyNetworkForm = {
+  code: "",
+  name: "",
+  type: "BRANCH" as NetworkLocation["type"],
+  region: "South",
+  state: "KA",
+  city: "",
+  pin: "",
+};
 
 export default function AdminPage() {
   const account = useSessionStore((s) => s.account);
@@ -39,10 +61,19 @@ export default function AdminPage() {
   const grantUserFullAccess = useAccessStore((s) => s.grantUserFullAccess);
   const resetAll = useAccessStore((s) => s.resetAll);
 
+  const dockets = useDemoStore((s) => s.dockets);
+  const trips = useDemoStore((s) => s.trips);
+  const invoices = useDemoStore((s) => s.invoices);
+  const warehouseExceptions = useDemoStore((s) => s.warehouseExceptions);
+  const networkLocations = useDemoStore((s) => s.networkLocations);
+  const createNetworkLocation = useDemoStore((s) => s.createNetworkLocation);
+
   const [tab, setTab] = useState<Tab>("roles");
   const [role, setRole] = useState<DemoRole>("sales");
   const [userId, setUserId] = useState(DEMO_ACCOUNTS[1]?.id ?? DEMO_ACCOUNTS[0].id);
   const [userFilter, setUserFilter] = useState<"all" | DemoRole | "disabled">("all");
+  const [networkOpen, setNetworkOpen] = useState(false);
+  const [networkForm, setNetworkForm] = useState(emptyNetworkForm);
 
   const selectedUser = DEMO_ACCOUNTS.find((u) => u.id === userId) ?? DEMO_ACCOUNTS[0];
   const roleModules = roleAccess[role] ?? DEFAULT_ROLE_ACCESS[role];
@@ -66,6 +97,18 @@ export default function AdminPage() {
   ).length;
   const overrideCount = DEMO_ACCOUNTS.filter(
     (u) => !!userOverrides[u.id]?.navHrefs
+  ).length;
+
+  const todayKey = new Date().toLocaleDateString("en-CA");
+  const docketsToday = dockets.filter((d) =>
+    d.createdAt.startsWith(todayKey)
+  ).length;
+  const tripsInTransit = trips.filter((t) => t.status === "in_transit").length;
+  const invoicesOutstanding = invoices
+    .filter((i) => i.status !== "paid")
+    .reduce((sum, i) => sum + (i.total - i.amountReceived), 0);
+  const openExceptions = warehouseExceptions.filter(
+    (e) => e.status === "open"
   ).length;
 
   if (!canManage) {
@@ -110,16 +153,27 @@ export default function AdminPage() {
         />
       </div>
 
-      <div className="mb-4 flex gap-1 rounded-xl bg-slate-100 p-1 w-fit">
+      <div className="mb-4 flex flex-wrap gap-1 rounded-xl bg-slate-100 p-1 w-fit">
         {(
           [
             ["roles", "Role access"],
             ["users", "User access"],
+            ["network", "Network Master"],
+            ["executive", "Executive"],
           ] as const
         ).map(([id, label]) => (
           <button
             key={id}
             type="button"
+            data-tour={
+              id === "roles"
+                ? "admin-roles-tab"
+                : id === "users"
+                  ? "admin-users-tab"
+                  : id === "network"
+                    ? "admin-network-tab"
+                    : undefined
+            }
             onClick={() => setTab(id)}
             className={cn(
               "rounded-lg px-4 py-2 text-sm font-semibold transition-colors",
@@ -204,7 +258,7 @@ export default function AdminPage() {
             />
           </Card>
         </div>
-      ) : (
+      ) : tab === "users" ? (
         <div className="grid gap-4 xl:grid-cols-[300px_1fr]">
           <Card>
             <CardHeader
@@ -315,6 +369,185 @@ export default function AdminPage() {
               }
             />
           </Card>
+        </div>
+      ) : tab === "network" ? (
+        <div>
+          <Card>
+            <CardHeader
+              title="Network locations"
+              subtitle="Regions, branches, booking offices and hubs"
+              action={
+                <Button size="sm" onClick={() => setNetworkOpen(true)}>
+                  + Location
+                </Button>
+              }
+            />
+            <div className="overflow-x-auto">
+              <table className="app-table w-full text-left text-sm">
+                <thead className="border-b border-[var(--border)]">
+                  <tr>
+                    <th className="px-4 py-2.5 sm:px-5">Code</th>
+                    <th className="px-4 py-2.5 sm:px-5">Name</th>
+                    <th className="px-4 py-2.5 sm:px-5">Type</th>
+                    <th className="px-4 py-2.5 sm:px-5">Region</th>
+                    <th className="px-4 py-2.5 sm:px-5">City / state</th>
+                    <th className="px-4 py-2.5 sm:px-5">PIN</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {networkLocations.map((loc) => (
+                    <tr
+                      key={loc.id}
+                      className="border-b border-[var(--border)]/70"
+                    >
+                      <td className="px-4 py-3 font-data text-xs sm:px-5">
+                        {loc.code}
+                      </td>
+                      <td className="px-4 py-3 font-medium sm:px-5">
+                        {loc.name}
+                      </td>
+                      <td className="px-4 py-3 sm:px-5">
+                        <StatusBadge tone="slate">
+                          {loc.type.replaceAll("_", " ")}
+                        </StatusBadge>
+                      </td>
+                      <td className="px-4 py-3 text-slate-600 sm:px-5">
+                        {loc.region}
+                      </td>
+                      <td className="px-4 py-3 text-slate-600 sm:px-5">
+                        {loc.city}, {loc.state}
+                      </td>
+                      <td className="px-4 py-3 font-data text-xs sm:px-5">
+                        {loc.pin}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </Card>
+
+          <EntityFormSheet
+            open={networkOpen}
+            onOpenChange={setNetworkOpen}
+            title="New network location"
+            description="Add a region, branch, booking office or transshipment hub."
+            onSave={() => {
+              if (
+                !networkForm.code.trim() ||
+                !networkForm.name.trim() ||
+                !networkForm.city.trim() ||
+                !networkForm.pin.trim()
+              ) {
+                toast.message("Fill code, name, city and PIN");
+                return;
+              }
+              createNetworkLocation({
+                code: networkForm.code.trim().toUpperCase(),
+                name: networkForm.name.trim(),
+                type: networkForm.type,
+                region: networkForm.region.trim(),
+                state: networkForm.state.trim().toUpperCase(),
+                city: networkForm.city.trim(),
+                pin: networkForm.pin.trim(),
+              });
+              toast.success("Network location created");
+              setNetworkOpen(false);
+              setNetworkForm(emptyNetworkForm);
+            }}
+          >
+            <div>
+              <Label>Code</Label>
+              <Input
+                value={networkForm.code}
+                placeholder="BR-BLR"
+                onChange={(e) =>
+                  setNetworkForm((f) => ({ ...f, code: e.target.value }))
+                }
+              />
+            </div>
+            <div>
+              <Label>Name</Label>
+              <Input
+                value={networkForm.name}
+                placeholder="Bengaluru Hub"
+                onChange={(e) =>
+                  setNetworkForm((f) => ({ ...f, name: e.target.value }))
+                }
+              />
+            </div>
+            <div>
+              <Label>Type</Label>
+              <Select
+                value={networkForm.type}
+                onChange={(e) =>
+                  setNetworkForm((f) => ({
+                    ...f,
+                    type: e.target.value as NetworkLocation["type"],
+                  }))
+                }
+              >
+                {LOCATION_TYPES.map((t) => (
+                  <option key={t} value={t}>
+                    {t.replaceAll("_", " ")}
+                  </option>
+                ))}
+              </Select>
+            </div>
+            <div>
+              <Label>Region</Label>
+              <Input
+                value={networkForm.region}
+                onChange={(e) =>
+                  setNetworkForm((f) => ({ ...f, region: e.target.value }))
+                }
+              />
+            </div>
+            <div>
+              <Label>State</Label>
+              <Input
+                value={networkForm.state}
+                placeholder="KA"
+                onChange={(e) =>
+                  setNetworkForm((f) => ({ ...f, state: e.target.value }))
+                }
+              />
+            </div>
+            <div>
+              <Label>City</Label>
+              <Input
+                value={networkForm.city}
+                onChange={(e) =>
+                  setNetworkForm((f) => ({ ...f, city: e.target.value }))
+                }
+              />
+            </div>
+            <div>
+              <Label>PIN</Label>
+              <Input
+                value={networkForm.pin}
+                placeholder="560001"
+                onChange={(e) =>
+                  setNetworkForm((f) => ({ ...f, pin: e.target.value }))
+                }
+              />
+            </div>
+          </EntityFormSheet>
+        </div>
+      ) : (
+        <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+          <KPIStat label="Dockets today" value={docketsToday} />
+          <KPIStat label="Trips in transit" value={tripsInTransit} />
+          <KPIStat
+            label="Invoices outstanding"
+            value={formatINR(invoicesOutstanding)}
+            tone={invoicesOutstanding > 0 ? "warning" : "default"}
+          />
+          <KPIStat
+            label="Warehouse exceptions"
+            value={openExceptions}
+            tone={openExceptions ? "warning" : "default"}
+          />
         </div>
       )}
     </div>

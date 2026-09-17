@@ -38,7 +38,11 @@ export default function VendorsPage() {
         description="Transport and procurement vendor master."
         actions={
           canEdit ? (
-            <Button size="sm" onClick={() => setOpen(true)}>
+            <Button
+              size="sm"
+              data-tour="vendors-new"
+              onClick={() => setOpen(true)}
+            >
               + Vendor
             </Button>
           ) : undefined

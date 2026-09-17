@@ -1,18 +1,18 @@
+import type { ComponentProps, ReactNode } from "react";
 import { cn } from "@/lib/utils";
 
 export function Card({
   className,
   children,
-}: {
-  className?: string;
-  children: React.ReactNode;
-}) {
+  ...props
+}: ComponentProps<"div">) {
   return (
     <div
       className={cn(
         "rounded-xl border border-[var(--border)] bg-card shadow-[var(--shadow-sm)]",
         className
       )}
+      {...props}
     >
       {children}
     </div>
@@ -27,7 +27,7 @@ export function CardHeader({
 }: {
   title: string;
   subtitle?: string;
-  action?: React.ReactNode;
+  action?: ReactNode;
   className?: string;
 }) {
   return (

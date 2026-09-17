@@ -7,32 +7,42 @@ import {
   customers as seedCustomers,
   drivers,
   seedAudit,
+  seedBths,
   seedDockets,
   seedInvoices,
   seedManifests,
+  seedNetworkLocations,
   seedPods,
   seedReceipts,
+  seedTariffZones,
   seedThcs,
   seedTickets,
   seedTrips,
+  seedWarehouseExceptions,
   users,
   vehicles as seedVehicles,
   vendors,
 } from "@/data/seed";
 import type {
   AuditEvent,
+  BTH,
   Contract,
   Customer,
   Docket,
+  HubScanEvent,
   Invoice,
+  Manifest,
+  NetworkLocation,
   POD,
   Receipt,
   RoleLens,
+  TariffZone,
   THC,
   Ticket,
   Trip,
   Vehicle,
   Vendor,
+  WarehouseException,
 } from "@/types";
 
 function nowIso() {
@@ -55,6 +65,12 @@ export interface DemoState {
   receipts: Receipt[];
   tickets: Ticket[];
   thcs: THC[];
+  bths: BTH[];
+  manifests: Manifest[];
+  warehouseExceptions: WarehouseException[];
+  hubScans: HubScanEvent[];
+  networkLocations: NetworkLocation[];
+  tariffZones: TariffZone[];
   vendors: Vendor[];
   contracts: Contract[];
   audit: AuditEvent[];
@@ -164,6 +180,55 @@ export interface DemoState {
   assignTicket: (id: string, owner: string) => void;
   resolveTicket: (id: string) => void;
   closeTicket: (id: string) => void;
+
+  recordHubScan: (input: {
+    barcode: string;
+    movement: HubScanEvent["movement"];
+    hub: string;
+    packages: number;
+    weightKg?: number;
+    condition: HubScanEvent["condition"];
+    remarks?: string;
+  }) => { ok: boolean; message: string; docketId?: string };
+  createManifest: (input: {
+    code?: string;
+    vehicleReg: string;
+    driverName: string;
+    originHub: string;
+    destinationHub: string;
+    docketIds: string[];
+  }) => string;
+  raiseWarehouseException: (input: {
+    docketId: string;
+    scanCode: string;
+    type: WarehouseException["type"];
+    severity: WarehouseException["severity"];
+    hub: string;
+    remarks: string;
+  }) => string;
+  closeWarehouseException: (id: string) => void;
+
+  approveThc: (id: string) => void;
+  rejectThc: (id: string) => void;
+  createBth: (input: {
+    thcId: string;
+    balanceAmount: number;
+    podStatus: BTH["podStatus"];
+    additionalType?: string;
+    additionalAmount?: number;
+  }) => string;
+  payBth: (id: string, utr: string) => void;
+
+  createNetworkLocation: (input: Omit<NetworkLocation, "id">) => string;
+  createTariffZone: (input: Omit<TariffZone, "id">) => string;
+
+  publishTripProgress: (
+    tripId: string,
+    input: { location: string; lat: number; lng: number; eta: string; message: string }
+  ) => void;
+  reportTripDelay: (tripId: string, reason: string) => void;
+  markTripArrived: (tripId: string) => void;
+  markTripDelivered: (tripId: string) => void;
 }
 
 export const useDemoStore = create<DemoState>((set, get) => ({
@@ -178,6 +243,12 @@ export const useDemoStore = create<DemoState>((set, get) => ({
   receipts: seedReceipts,
   tickets: seedTickets,
   thcs: seedThcs,
+  bths: seedBths,
+  manifests: seedManifests,
+  warehouseExceptions: seedWarehouseExceptions,
+  hubScans: [],
+  networkLocations: seedNetworkLocations,
+  tariffZones: seedTariffZones,
   vendors: vendors,
   contracts: contracts,
   audit: seedAudit,
@@ -298,25 +369,46 @@ export const useDemoStore = create<DemoState>((set, get) => ({
 
   scanBox: (barcode) => {
     const state = get();
-    const docket = state.dockets.find((d) =>
-      d.boxes.some((b) => b.barcode.toLowerCase() === barcode.toLowerCase())
+    const raw = barcode.trim();
+    const key = raw.toLowerCase();
+
+    // Package barcode, or docket number / id from printed scan label
+    let docket = state.dockets.find((d) =>
+      d.boxes.some((b) => b.barcode.toLowerCase() === key)
     );
+    let targetBarcode = raw;
+
     if (!docket) {
-      const message = `Unknown barcode: ${barcode}`;
+      docket = state.dockets.find(
+        (d) => d.number.toLowerCase() === key || d.id.toLowerCase() === key
+      );
+      if (docket) {
+        const next = docket.boxes.find((b) => !b.scanned);
+        if (!next) {
+          const message = `All packages already scanned for ${docket.number}`;
+          set({ scanMessage: message });
+          return { ok: false, message, docketId: docket.id };
+        }
+        targetBarcode = next.barcode;
+      }
+    }
+
+    if (!docket) {
+      const message = `Unknown barcode: ${raw}`;
       set({ scanMessage: message });
       return { ok: false, message };
     }
     const box = docket.boxes.find(
-      (b) => b.barcode.toLowerCase() === barcode.toLowerCase()
+      (b) => b.barcode.toLowerCase() === targetBarcode.toLowerCase()
     )!;
     if (box.scanned) {
-      const message = `Duplicate scan blocked for ${barcode}`;
+      const message = `Duplicate scan blocked for ${targetBarcode}`;
       set({ scanMessage: message });
       get().pushAudit({
         user: "Suresh Rao",
         module: "Warehouse",
         entityType: "DocketBox",
-        entityId: barcode,
+        entityId: targetBarcode,
         action: "Duplicate scan blocked",
         previous: "Staged",
         next: "Staged",
@@ -327,7 +419,7 @@ export const useDemoStore = create<DemoState>((set, get) => ({
       dockets: s.dockets.map((d) => {
         if (d.id !== docket.id) return d;
         const boxes = d.boxes.map((b) =>
-          b.barcode.toLowerCase() === barcode.toLowerCase()
+          b.barcode.toLowerCase() === targetBarcode.toLowerCase()
             ? {
                 ...b,
                 scanned: true,
@@ -344,18 +436,18 @@ export const useDemoStore = create<DemoState>((set, get) => ({
           updatedAt: nowIso(),
         };
       }),
-      scanMessage: `✓ ${barcode} verified and staged`,
+      scanMessage: `✓ ${targetBarcode} verified and staged`,
     }));
     get().pushAudit({
       user: "Suresh Rao",
       module: "Warehouse",
       entityType: "DocketBox",
-      entityId: barcode,
+      entityId: targetBarcode,
       action: "Package scanned",
       previous: "Pending",
       next: "Staged",
     });
-    return { ok: true, message: `Scanned ${barcode}`, docketId: docket.id };
+    return { ok: true, message: `Scanned ${targetBarcode}`, docketId: docket.id };
   },
 
   dispatchTrip: (docketId, vehicleId) => {
@@ -1200,15 +1292,312 @@ export const useDemoStore = create<DemoState>((set, get) => ({
           : t
       ),
     }));
+  },
+
+  recordHubScan: (input) => {
+    const result = get().scanBox(input.barcode);
+    if (!result.ok || !result.docketId) return result;
+    const event: HubScanEvent = {
+      id: uid("scan"),
+      docketId: result.docketId,
+      barcode: input.barcode,
+      movement: input.movement,
+      hub: input.hub,
+      packages: input.packages,
+      weightKg: input.weightKg,
+      condition: input.condition,
+      remarks: input.remarks,
+      at: nowIso(),
+    };
+    set((s) => ({ hubScans: [event, ...s.hubScans] }));
+    if (input.condition !== "GOOD") {
+      get().pushAudit({
+        user: "Suresh Rao",
+        module: "Warehouse",
+        entityType: "HubScan",
+        entityId: input.barcode,
+        action: `Condition ${input.condition} on ${input.movement}`,
+        next: input.condition,
+      });
+    }
+    return {
+      ok: true,
+      message: `${input.movement.replace("_", " ")} recorded · ${result.message}`,
+      docketId: result.docketId,
+    };
+  },
+
+  createManifest: (input) => {
+    const id = uid("mf");
+    const code =
+      input.code?.trim() ||
+      `MF-${String(6700000 + get().manifests.length + 1)}`;
+    const manifest: Manifest = {
+      id,
+      code,
+      tripId: "",
+      docketIds: input.docketIds,
+      vehicleReg: input.vehicleReg,
+      driverName: input.driverName,
+      originHub: input.originHub,
+      destinationHub: input.destinationHub,
+      ewayStatus: "pending",
+      status: "generated",
+      createdAt: nowIso(),
+    };
+    set((s) => ({
+      manifests: [manifest, ...s.manifests],
+      dockets: s.dockets.map((d) =>
+        input.docketIds.includes(d.id)
+          ? {
+              ...d,
+              boxes: d.boxes.map((b) => ({
+                ...b,
+                status: "manifested" as const,
+              })),
+              updatedAt: nowIso(),
+            }
+          : d
+      ),
+    }));
     get().pushAudit({
-      user: "Support",
-      module: "Support",
-      entityType: "Ticket",
-      entityId: id,
-      action: "Closed ticket",
-      previous: "resolved",
-      next: "closed",
+      user: "Suresh Rao",
+      module: "Warehouse",
+      entityType: "Manifest",
+      entityId: code,
+      action: "Created audited manifest",
+      next: `${input.docketIds.length} dockets`,
     });
+    return id;
+  },
+
+  raiseWarehouseException: (input) => {
+    const id = uid("wex");
+    const ex: WarehouseException = {
+      id,
+      ...input,
+      status: "open",
+      createdAt: nowIso(),
+    };
+    set((s) => ({
+      warehouseExceptions: [ex, ...s.warehouseExceptions],
+      dockets: s.dockets.map((d) =>
+        d.id === input.docketId
+          ? { ...d, status: "exception", updatedAt: nowIso() }
+          : d
+      ),
+    }));
+    get().pushAudit({
+      user: "Suresh Rao",
+      module: "Warehouse",
+      entityType: "Exception",
+      entityId: id,
+      action: `Raised ${input.type} exception`,
+      next: input.severity,
+    });
+    return id;
+  },
+
+  closeWarehouseException: (id) => {
+    set((s) => ({
+      warehouseExceptions: s.warehouseExceptions.map((e) =>
+        e.id === id ? { ...e, status: "closed" } : e
+      ),
+    }));
+  },
+
+  approveThc: (id) => {
+    set((s) => ({
+      thcs: s.thcs.map((t) =>
+        t.id === id ? { ...t, status: "approved" } : t
+      ),
+    }));
+    const thc = get().thcs.find((t) => t.id === id);
+    get().pushAudit({
+      user: "Anil Mehta",
+      module: "THC",
+      entityType: "THC",
+      entityId: thc?.number ?? id,
+      action: "THC approved (Traffic + Accounts)",
+      previous: "pending",
+      next: "approved",
+    });
+  },
+
+  rejectThc: (id) => {
+    set((s) => ({
+      thcs: s.thcs.map((t) =>
+        t.id === id ? { ...t, status: "rejected" } : t
+      ),
+    }));
+  },
+
+  createBth: (input) => {
+    const id = uid("bth");
+    const number = `BTH-2026-${String(get().bths.length + 1).padStart(4, "0")}`;
+    const bth: BTH = {
+      id,
+      number,
+      thcId: input.thcId,
+      balanceAmount: input.balanceAmount,
+      podStatus: input.podStatus,
+      additionalCharges:
+        input.additionalType && input.additionalAmount
+          ? [{ type: input.additionalType, amount: input.additionalAmount }]
+          : [],
+      status: "pending_accounts",
+      createdAt: nowIso(),
+    };
+    set((s) => ({ bths: [bth, ...s.bths] }));
+    get().pushAudit({
+      user: "Accounts",
+      module: "BTH",
+      entityType: "BTH",
+      entityId: number,
+      action: "Created BTH for balance hire settlement",
+      next: "pending_accounts",
+    });
+    return id;
+  },
+
+  payBth: (id, utr) => {
+    set((s) => ({
+      bths: s.bths.map((b) =>
+        b.id === id ? { ...b, status: "completed", utr } : b
+      ),
+    }));
+    const bth = get().bths.find((b) => b.id === id);
+    get().pushAudit({
+      user: "Accounts",
+      module: "BTH",
+      entityType: "BTH",
+      entityId: bth?.number ?? id,
+      action: "BTH paid and locked",
+      next: utr,
+    });
+  },
+
+  createNetworkLocation: (input) => {
+    const id = uid("loc");
+    set((s) => ({
+      networkLocations: [{ id, ...input }, ...s.networkLocations],
+    }));
+    get().pushAudit({
+      user: "Demo Administrator",
+      module: "Administration",
+      entityType: "NetworkLocation",
+      entityId: input.code,
+      action: "Created network master record",
+      next: input.type,
+    });
+    return id;
+  },
+
+  createTariffZone: (input) => {
+    const id = uid("tz");
+    set((s) => ({
+      tariffZones: [{ id, ...input }, ...s.tariffZones],
+    }));
+    get().pushAudit({
+      user: "Sales",
+      module: "Contracts",
+      entityType: "TariffZone",
+      entityId: input.name,
+      action: "Created customer tariff zone",
+      next: input.mode,
+    });
+    return id;
+  },
+
+  publishTripProgress: (tripId, input) => {
+    set((s) => ({
+      trips: s.trips.map((t) =>
+        t.id === tripId
+          ? {
+              ...t,
+              currentLocation: input.location,
+              lat: input.lat,
+              lng: input.lng,
+              eta: input.eta,
+              publicToken: t.publicToken ?? `trk-${t.id}`,
+              customerUpdates: [
+                {
+                  at: nowIso(),
+                  message: input.message,
+                  channel: "SMS" as const,
+                },
+                ...(t.customerUpdates ?? []),
+              ],
+            }
+          : t
+      ),
+    }));
+    get().pushAudit({
+      user: "Traffic",
+      module: "Tracking",
+      entityType: "Trip",
+      entityId: tripId,
+      action: "Published truck progress to customer",
+      next: input.location,
+    });
+  },
+
+  reportTripDelay: (tripId, reason) => {
+    set((s) => ({
+      trips: s.trips.map((t) =>
+        t.id === tripId
+          ? {
+              ...t,
+              delayed: true,
+              customerUpdates: [
+                {
+                  at: nowIso(),
+                  message: `Delay reported: ${reason}`,
+                  channel: "WHATSAPP" as const,
+                },
+                ...(t.customerUpdates ?? []),
+              ],
+            }
+          : t
+      ),
+    }));
+    get().pushAudit({
+      user: "Traffic",
+      module: "Tracking",
+      entityType: "Trip",
+      entityId: tripId,
+      action: "Reported delay",
+      next: reason,
+    });
+  },
+
+  markTripArrived: (tripId) => {
+    set((s) => ({
+      trips: s.trips.map((t) =>
+        t.id === tripId
+          ? {
+              ...t,
+              status: "arrived",
+              progressPct: 100,
+              currentLocation: t.destination,
+            }
+          : t
+      ),
+    }));
+  },
+
+  markTripDelivered: (tripId) => {
+    const trip = get().trips.find((t) => t.id === tripId);
+    set((s) => ({
+      trips: s.trips.map((t) =>
+        t.id === tripId ? { ...t, status: "completed", progressPct: 100 } : t
+      ),
+      dockets: s.dockets.map((d) =>
+        trip?.docketIds.includes(d.id)
+          ? { ...d, status: "delivered", updatedAt: nowIso() }
+          : d
+      ),
+    }));
   },
 }));
 
@@ -1222,5 +1611,7 @@ export const masterData = {
   get vendors() {
     return useDemoStore.getState().vendors;
   },
-  manifests: seedManifests,
+  get manifests() {
+    return useDemoStore.getState().manifests;
+  },
 };

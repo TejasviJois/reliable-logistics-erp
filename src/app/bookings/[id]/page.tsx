@@ -1,11 +1,13 @@
 "use client";
 
 import Link from "next/link";
-import { use, useMemo } from "react";
+import { use, useEffect, useMemo, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { EmptyState, PageHeader, SectionLabel } from "@/components/ui/page";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader } from "@/components/ui/card";
 import { StatusBadge } from "@/components/ui/badge";
+import { ScanLabelDialog } from "@/components/scan-label-dialog";
 import { Timeline, WorkflowStepper } from "@/components/workflow";
 import { MODE_LABEL, STATUS_LABEL, STATUS_TONE } from "@/lib/status";
 import { formatDate, formatDateTime, formatINR } from "@/lib/utils";
@@ -17,10 +19,12 @@ export default function DocketDetailPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = use(params);
+  const searchParams = useSearchParams();
   const dockets = useDemoStore((s) => s.dockets);
   const customers = useDemoStore((s) => s.customers);
   const allAudit = useDemoStore((s) => s.audit);
   const invoices = useDemoStore((s) => s.invoices);
+  const [labelOpen, setLabelOpen] = useState(false);
 
   const docket = useMemo(() => dockets.find((d) => d.id === id), [dockets, id]);
   const customer = useMemo(
@@ -38,6 +42,10 @@ export default function DocketDetailPage({
     () => invoices.find((i) => i.docketId === id),
     [invoices, id]
   );
+
+  useEffect(() => {
+    if (searchParams.get("label") === "1") setLabelOpen(true);
+  }, [searchParams]);
 
   if (!docket) {
     return (
@@ -61,6 +69,14 @@ export default function DocketDetailPage({
             <StatusBadge tone={STATUS_TONE[docket.status]}>
               {STATUS_LABEL[docket.status]}
             </StatusBadge>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => setLabelOpen(true)}
+            >
+              View / print barcode
+            </Button>
             <Button asChild variant="secondary" size="sm">
               <Link href="/warehouse">Warehouse</Link>
             </Button>
@@ -156,6 +172,12 @@ export default function DocketDetailPage({
           </div>
         </Card>
       </div>
+
+      <ScanLabelDialog
+        docket={docket}
+        open={labelOpen}
+        onOpenChange={setLabelOpen}
+      />
     </div>
   );
 }

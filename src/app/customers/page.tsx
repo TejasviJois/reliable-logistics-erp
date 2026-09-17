@@ -43,7 +43,11 @@ export default function CustomersPage() {
         description="Customer master with contracts, shipments and receivables linked. Pending profiles cannot book until Admin approves."
         actions={
           canEdit ? (
-            <Button size="sm" onClick={() => setOpen(true)}>
+            <Button
+              size="sm"
+              data-tour="customers-new"
+              onClick={() => setOpen(true)}
+            >
               + Customer
             </Button>
           ) : undefined
@@ -69,7 +73,11 @@ export default function CustomersPage() {
       <Card>
         <CardHeader title="Customer master" subtitle="Profiles" />
         <ul className="divide-y divide-border">
-          {customers.map((c) => (
+          {customers.map((c) => {
+            const isFirstPending =
+              c.status === "pending" &&
+              customers.find((x) => x.status === "pending")?.id === c.id;
+            return (
             <li key={c.id}>
               <div className="flex items-center justify-between gap-3 px-4 py-2.5 sm:px-5">
                 <Link
@@ -103,6 +111,9 @@ export default function CustomersPage() {
                     <Button
                       size="sm"
                       variant="outline"
+                      data-tour={
+                        isFirstPending ? "customers-approve" : undefined
+                      }
                       onClick={() => {
                         approveCustomer(c.id);
                         toast.success(`${c.name} approved for booking`);
@@ -126,7 +137,8 @@ export default function CustomersPage() {
                 </div>
               </div>
             </li>
-          ))}
+            );
+          })}
         </ul>
       </Card>
 

@@ -50,6 +50,7 @@ export default function FleetPage() {
           canEdit ? (
             <Button
               size="sm"
+              data-tour="fleet-new"
               onClick={() => {
                 setForm((f) => ({
                   ...f,
@@ -88,7 +89,7 @@ export default function FleetPage() {
       <Card>
         <CardHeader title="Vehicle master" subtitle="Network fleet" />
         <ul className="divide-y divide-border">
-          {vehicles.map((v) => {
+          {vehicles.map((v, index) => {
             const driver = masterData.drivers.find((d) => d.id === v.driverId);
             const vendor = vendors.find((x) => x.id === v.vendorId);
             return (
@@ -124,7 +125,10 @@ export default function FleetPage() {
                     Util {v.currentUtilizationPct}%
                   </p>
                   {canEdit ? (
-                    <div className="flex flex-wrap justify-end gap-1">
+                    <div
+                      className="flex flex-wrap justify-end gap-1"
+                      data-tour={index === 0 ? "fleet-docs" : undefined}
+                    >
                       <Button
                         size="sm"
                         variant="outline"

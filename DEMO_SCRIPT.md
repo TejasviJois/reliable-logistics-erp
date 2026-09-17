@@ -20,6 +20,8 @@ Hero shipment: **DK-10231** · Meridian Electronics · Bengaluru → Chennai · 
 
 Nav is filtered **by module** for each role (not just group). Each role lands on their department workbench with a **Your work today** queue.
 
+**Guided tours:** toggle **Tutorial** in the topbar (or **Start guided tour** on the work queue). Popups spotlight real buttons — Next → Finish — then explain the **next role** and how they work together. Switch user to continue the spine.
+
 | Role | Lands on | Work they see |
 | --- | --- | --- |
 | Admin / Super User | `/` | Org, RBAC, approvals, MIS, audit |
@@ -59,13 +61,14 @@ Roles and primary flows are aligned to `Logistics_ERP_User_Flows.pdf`.
 2. Show contracts, shipments, invoices, tickets as one relationship
 
 ## Scene 4 — Booking (optional create, or use seeded DK-10231)
-1. `/bookings/new` — walk 4 steps + summary rail
-2. Or open `/bookings/dk-10231`
+1. `/bookings/new` — walk 4 steps + summary rail → create opens **scan label**
+2. Or open `/bookings` · **View / print barcode** on any row → Download / Print label
+3. Or open `/bookings/dk-10231`
 
 ## Scene 5 — Warehouse
-1. `/warehouse`
-2. Scan `BX-10231-09` (8/9 already done)
-3. Show progress → Manifest ready
+1. `/warehouse` · tabs **Control / Scan / Manifests / Exceptions**
+2. Scan printed package code (`BX-10231-09`) **or** docket number — inward/outward + condition
+3. Create audited **manifest**; raise **exception** if needed
 4. Try duplicate scan to show blocked + audit
 
 ## Scene 6–7 — Traffic & Dispatch

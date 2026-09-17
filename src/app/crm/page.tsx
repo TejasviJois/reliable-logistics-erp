@@ -67,7 +67,12 @@ export default function CrmPage() {
         actions={
           canEdit ? (
             <>
-              <Button variant="secondary" size="sm" onClick={() => setLeadOpen(true)}>
+              <Button
+                variant="secondary"
+                size="sm"
+                data-tour="crm-new-lead"
+                onClick={() => setLeadOpen(true)}
+              >
                 + Lead
               </Button>
               <Button size="sm" onClick={() => setQuoteOpen(true)}>
