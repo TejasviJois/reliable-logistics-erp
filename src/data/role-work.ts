@@ -77,6 +77,54 @@ export interface ComplianceDoc {
   owner: string;
 }
 
+export interface Campaign {
+  id: string;
+  name: string;
+  channel: string;
+  budget: number;
+  spent: number;
+  leads: number;
+  qualified: number;
+  status: "planned" | "live" | "completed";
+  roiNote: string;
+}
+
+export const campaigns: Campaign[] = [
+  {
+    id: "camp-1",
+    name: "South Hub PTL Push Q3",
+    channel: "LinkedIn + Trade shows",
+    budget: 450000,
+    spent: 312000,
+    leads: 86,
+    qualified: 24,
+    status: "live",
+    roiNote: "Handoff to Sales — 4 open opportunities",
+  },
+  {
+    id: "camp-2",
+    name: "Pharma Cold-chain Awareness",
+    channel: "Email + Webinar",
+    budget: 180000,
+    spent: 180000,
+    leads: 41,
+    qualified: 12,
+    status: "completed",
+    roiNote: "2 converted customers · Orbit Pharma pipeline",
+  },
+  {
+    id: "camp-3",
+    name: "Diwali Surface Capacity",
+    channel: "WhatsApp + SMS",
+    budget: 120000,
+    spent: 0,
+    leads: 0,
+    qualified: 0,
+    status: "planned",
+    roiNote: "Launch week of 29 Sep",
+  },
+];
+
 export const salesLeads: SalesLead[] = [
   {
     id: "lead-1",

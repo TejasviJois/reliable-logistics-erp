@@ -21,6 +21,7 @@ import {
 } from "@/data/seed";
 import type {
   AuditEvent,
+  Contract,
   Customer,
   Docket,
   Invoice,
@@ -31,6 +32,7 @@ import type {
   Ticket,
   Trip,
   Vehicle,
+  Vendor,
 } from "@/types";
 
 function nowIso() {
@@ -53,6 +55,8 @@ export interface DemoState {
   receipts: Receipt[];
   tickets: Ticket[];
   thcs: THC[];
+  vendors: Vendor[];
+  contracts: Contract[];
   audit: AuditEvent[];
   selectedDocketId: string | null;
   drawerOpen: boolean;
@@ -106,6 +110,60 @@ export interface DemoState {
   generateInvoice: (docketId: string) => string | null;
   recordReceipt: (invoiceId: string, amount: number) => void;
   createThc: (tripId: string) => void;
+
+  createCustomer: (input: {
+    name: string;
+    city: string;
+    contactPerson: string;
+    email: string;
+    phone: string;
+    gstin?: string;
+  }) => string;
+  updateCustomer: (id: string, patch: Partial<Customer>) => void;
+  deactivateCustomer: (id: string) => void;
+
+  createVehicle: (input: {
+    registration: string;
+    type: string;
+    capacityKg: number;
+    vendorId: string;
+    driverId: string;
+  }) => string;
+  updateVehicle: (id: string, patch: Partial<Vehicle>) => void;
+  deleteVehicle: (id: string) => void;
+  setVehicleMaintenance: (id: string) => void;
+  renewVehicleDocs: (id: string) => void;
+
+  createVendor: (input: {
+    name: string;
+    gstin: string;
+    type: Vendor["type"];
+    phone: string;
+  }) => string;
+  updateVendor: (id: string, patch: Partial<Vendor>) => void;
+  deactivateVendor: (id: string) => void;
+
+  createContract: (input: {
+    customerId: string;
+    mode: Contract["mode"];
+    zone: string;
+    ratePerKg: number;
+    minFreight: number;
+  }) => string;
+  updateContract: (id: string, patch: Partial<Contract>) => void;
+  deactivateContract: (id: string) => void;
+
+  createTicket: (input: {
+    subject: string;
+    customerId: string;
+    docketId?: string;
+    severity: Ticket["severity"];
+    category: string;
+    owner: string;
+  }) => string;
+  assignTicket: (id: string, owner: string) => void;
+  resolveTicket: (id: string) => void;
+  closeTicket: (id: string) => void;
 }
 
 export const useDemoStore = create<DemoState>((set, get) => ({
@@ -120,6 +178,8 @@ export const useDemoStore = create<DemoState>((set, get) => ({
   receipts: seedReceipts,
   tickets: seedTickets,
   thcs: seedThcs,
+  vendors: vendors,
+  contracts: contracts,
   audit: seedAudit,
   selectedDocketId: null,
   drawerOpen: false,
@@ -323,7 +383,7 @@ export const useDemoStore = create<DemoState>((set, get) => ({
       };
     }
 
-    const vendor = vendors.find((v) => v.id === vehicle.vendorId);
+    const vendor = get().vendors.find((v) => v.id === vehicle.vendorId);
     const needsThc = vendor?.type === "market" || vendor?.type === "contracted";
 
     const tripId = uid("trip");
@@ -749,13 +809,418 @@ export const useDemoStore = create<DemoState>((set, get) => ({
       next: "Pending Approval",
     });
   },
+
+  createCustomer: (input) => {
+    const id = uid("cus");
+    const code = `CUS-${String(200 + get().customers.length).padStart(4, "0")}`;
+    const customer: Customer = {
+      id,
+      code,
+      name: input.name,
+      gstin: input.gstin || "29AABCR0000A1Z5",
+      pan: "AABCR0000A",
+      address: `${input.city}`,
+      city: input.city,
+      contactPerson: input.contactPerson,
+      email: input.email,
+      phone: input.phone,
+      status: "pending",
+      contractedModes: ["PTL"],
+      outstanding: 0,
+    };
+    set((s) => ({ customers: [customer, ...s.customers] }));
+    get().pushAudit({
+      user: "Sales",
+      module: "Customers",
+      entityType: "Customer",
+      entityId: code,
+      action: "Created customer — pending Admin approval",
+      previous: "—",
+      next: "Pending",
+    });
+    return id;
+  },
+
+  updateCustomer: (id, patch) => {
+    set((s) => ({
+      customers: s.customers.map((c) => (c.id === id ? { ...c, ...patch } : c)),
+    }));
+    get().pushAudit({
+      user: "Sales",
+      module: "Customers",
+      entityType: "Customer",
+      entityId: id,
+      action: "Updated customer",
+      previous: "—",
+      next: "Updated",
+    });
+  },
+
+  deactivateCustomer: (id) => {
+    set((s) => ({
+      customers: s.customers.map((c) =>
+        c.id === id ? { ...c, status: "inactive" } : c
+      ),
+    }));
+    get().pushAudit({
+      user: "Admin",
+      module: "Customers",
+      entityType: "Customer",
+      entityId: id,
+      action: "Deactivated customer",
+      previous: "active",
+      next: "inactive",
+    });
+  },
+
+  createVehicle: (input) => {
+    const id = uid("veh");
+    const vehicle: Vehicle = {
+      id,
+      registration: input.registration,
+      type: input.type,
+      capacityKg: input.capacityKg,
+      capacityPackages: Math.round(input.capacityKg / 40),
+      vendorId: input.vendorId,
+      driverId: input.driverId,
+      status: "available",
+      currentUtilizationPct: 0,
+      docs: { rc: "Valid", insurance: "Valid", permit: "Valid", fitness: "Valid" },
+      insuranceExpiry: "2027-09-18",
+      lat: 12.97,
+      lng: 77.59,
+    };
+    set((s) => ({ vehicles: [vehicle, ...s.vehicles] }));
+    get().pushAudit({
+      user: "Fleet",
+      module: "Fleet",
+      entityType: "Vehicle",
+      entityId: vehicle.registration,
+      action: "Added vehicle",
+      previous: "—",
+      next: "available",
+    });
+    return id;
+  },
+
+  updateVehicle: (id, patch) => {
+    set((s) => ({
+      vehicles: s.vehicles.map((v) => (v.id === id ? { ...v, ...patch } : v)),
+    }));
+    get().pushAudit({
+      user: "Fleet",
+      module: "Fleet",
+      entityType: "Vehicle",
+      entityId: id,
+      action: "Updated vehicle",
+      previous: "—",
+      next: "Updated",
+    });
+  },
+
+  deleteVehicle: (id) => {
+    const v = get().vehicles.find((x) => x.id === id);
+    if (v?.status === "in_transit") return;
+    set((s) => ({ vehicles: s.vehicles.filter((x) => x.id !== id) }));
+    get().pushAudit({
+      user: "Fleet",
+      module: "Fleet",
+      entityType: "Vehicle",
+      entityId: v?.registration ?? id,
+      action: "Deleted vehicle",
+      previous: v?.status ?? "—",
+      next: "Removed",
+    });
+  },
+
+  setVehicleMaintenance: (id) => {
+    set((s) => ({
+      vehicles: s.vehicles.map((v) =>
+        v.id === id ? { ...v, status: "maintenance" } : v
+      ),
+    }));
+    get().pushAudit({
+      user: "Fleet",
+      module: "Fleet",
+      entityType: "Vehicle",
+      entityId: id,
+      action: "Marked maintenance",
+      previous: "available",
+      next: "maintenance",
+    });
+  },
+
+  renewVehicleDocs: (id) => {
+    set((s) => ({
+      vehicles: s.vehicles.map((v) =>
+        v.id === id
+          ? {
+              ...v,
+              docs: {
+                rc: "Valid",
+                insurance: "Valid",
+                permit: "Valid",
+                fitness: "Valid",
+              },
+              insuranceExpiry: "2027-12-31",
+              status: v.status === "maintenance" ? "available" : v.status,
+            }
+          : v
+      ),
+    }));
+    get().pushAudit({
+      user: "Fleet",
+      module: "Fleet",
+      entityType: "Vehicle",
+      entityId: id,
+      action: "Renewed vehicle documents",
+      previous: "Expiring",
+      next: "Valid",
+    });
+  },
+
+  createVendor: (input) => {
+    const id = uid("ven");
+    const vendor: Vendor = {
+      id,
+      name: input.name,
+      gstin: input.gstin,
+      type: input.type,
+      rating: 4,
+      phone: input.phone,
+    };
+    set((s) => ({ vendors: [vendor, ...s.vendors] }));
+    get().pushAudit({
+      user: "Procurement",
+      module: "Vendors",
+      entityType: "Vendor",
+      entityId: vendor.name,
+      action: "Created vendor",
+      previous: "—",
+      next: input.type,
+    });
+    return id;
+  },
+
+  updateVendor: (id, patch) => {
+    set((s) => ({
+      vendors: s.vendors.map((v) => (v.id === id ? { ...v, ...patch } : v)),
+    }));
+    get().pushAudit({
+      user: "Procurement",
+      module: "Vendors",
+      entityType: "Vendor",
+      entityId: id,
+      action: "Updated vendor",
+      previous: "—",
+      next: "Updated",
+    });
+  },
+
+  deactivateVendor: (id) => {
+    set((s) => ({
+      vendors: s.vendors.map((v) =>
+        v.id === id ? { ...v, rating: 0 } : v
+      ),
+    }));
+    get().pushAudit({
+      user: "Procurement",
+      module: "Vendors",
+      entityType: "Vendor",
+      entityId: id,
+      action: "Deactivated vendor (rating cleared)",
+      previous: "active",
+      next: "inactive",
+    });
+  },
+
+  createContract: (input) => {
+    const id = uid("ctr");
+    const contract: Contract = {
+      id,
+      customerId: input.customerId,
+      mode: input.mode,
+      zone: input.zone,
+      ratePerKg: input.ratePerKg,
+      minFreight: input.minFreight,
+      effectiveFrom: nowIso().slice(0, 10),
+      effectiveTo: "2027-12-31",
+      status: "approved",
+    };
+    set((s) => ({ contracts: [contract, ...s.contracts] }));
+    get().pushAudit({
+      user: "Sales",
+      module: "Contracts",
+      entityType: "Contract",
+      entityId: id,
+      action: "Created tariff contract",
+      previous: "—",
+      next: "approved",
+    });
+    return id;
+  },
+
+  updateContract: (id, patch) => {
+    set((s) => ({
+      contracts: s.contracts.map((c) => (c.id === id ? { ...c, ...patch } : c)),
+    }));
+    get().pushAudit({
+      user: "Sales",
+      module: "Contracts",
+      entityType: "Contract",
+      entityId: id,
+      action: "Updated contract",
+      previous: "—",
+      next: "Updated",
+    });
+  },
+
+  deactivateContract: (id) => {
+    set((s) => ({
+      contracts: s.contracts.map((c) =>
+        c.id === id ? { ...c, status: "on_hold" } : c
+      ),
+    }));
+    get().pushAudit({
+      user: "Legal",
+      module: "Contracts",
+      entityType: "Contract",
+      entityId: id,
+      action: "Put contract on hold",
+      previous: "approved",
+      next: "on_hold",
+    });
+  },
+
+  createTicket: (input) => {
+    const id = uid("tkt");
+    const number = `TKT-2026-${String(50 + get().tickets.length).padStart(4, "0")}`;
+    const ticket: Ticket = {
+      id,
+      number,
+      subject: input.subject,
+      customerId: input.customerId,
+      docketId: input.docketId,
+      severity: input.severity,
+      category: input.category,
+      status: "open",
+      owner: input.owner,
+      slaDue: new Date(Date.now() + 86400000).toISOString(),
+      createdAt: nowIso(),
+      updates: [
+        {
+          action: "Opened",
+          note: "Ticket created from Support desk",
+          at: nowIso(),
+        },
+      ],
+    };
+    set((s) => ({ tickets: [ticket, ...s.tickets] }));
+    get().pushAudit({
+      user: "Support",
+      module: "Support",
+      entityType: "Ticket",
+      entityId: number,
+      action: "Created ticket",
+      previous: "—",
+      next: "open",
+    });
+    return id;
+  },
+
+  assignTicket: (id, owner) => {
+    set((s) => ({
+      tickets: s.tickets.map((t) =>
+        t.id === id
+          ? {
+              ...t,
+              owner,
+              status: "in_progress",
+              updates: [
+                {
+                  action: "Assigned",
+                  note: `Assigned to ${owner}`,
+                  at: nowIso(),
+                },
+                ...t.updates,
+              ],
+            }
+          : t
+      ),
+    }));
+    get().pushAudit({
+      user: "Support",
+      module: "Support",
+      entityType: "Ticket",
+      entityId: id,
+      action: `Assigned to ${owner}`,
+      previous: "open",
+      next: "in_progress",
+    });
+  },
+
+  resolveTicket: (id) => {
+    set((s) => ({
+      tickets: s.tickets.map((t) =>
+        t.id === id
+          ? {
+              ...t,
+              status: "resolved",
+              updates: [
+                { action: "Resolved", note: "Issue resolved", at: nowIso() },
+                ...t.updates,
+              ],
+            }
+          : t
+      ),
+    }));
+    get().pushAudit({
+      user: "Support",
+      module: "Support",
+      entityType: "Ticket",
+      entityId: id,
+      action: "Resolved ticket",
+      previous: "in_progress",
+      next: "resolved",
+    });
+  },
+
+  closeTicket: (id) => {
+    set((s) => ({
+      tickets: s.tickets.map((t) =>
+        t.id === id
+          ? {
+              ...t,
+              status: "closed",
+              updates: [
+                { action: "Closed", note: "Ticket closed", at: nowIso() },
+                ...t.updates,
+              ],
+            }
+          : t
+      ),
+    }));
+    get().pushAudit({
+      user: "Support",
+      module: "Support",
+      entityType: "Ticket",
+      entityId: id,
+      action: "Closed ticket",
+      previous: "resolved",
+      next: "closed",
+    });
+  },
 }));
 
 export const masterData = {
   branches,
   users,
-  contracts,
+  get contracts() {
+    return useDemoStore.getState().contracts;
+  },
   drivers,
-  vendors,
+  get vendors() {
+    return useDemoStore.getState().vendors;
+  },
   manifests: seedManifests,
 };

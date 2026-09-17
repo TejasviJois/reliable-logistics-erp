@@ -5,22 +5,42 @@ import { PageHeader } from "@/components/ui/page";
 import { Card, CardHeader, KPIStat } from "@/components/ui/card";
 import { StatusBadge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Input, Label, Select } from "@/components/ui/input";
 import { RoleWorkQueue } from "@/components/role-work-queue";
+import { EntityFormSheet } from "@/components/entity-form-sheet";
 import { formatINR } from "@/lib/utils";
-import { purchaseOrders, type PurchaseOrder } from "@/data/role-work";
-import { masterData } from "@/store/demo-store";
+import { canMutate } from "@/data/can-mutate";
+import { useDeptStore } from "@/store/dept-store";
+import { useDemoStore } from "@/store/demo-store";
+import { useSessionStore } from "@/store/session-store";
+import { toast } from "sonner";
+
+const HUBS = ["Bengaluru Hub", "Chennai Hub", "Hyderabad Hub", "Mumbai Hub"];
+const CATEGORIES = [
+  "Cartons & stretch film",
+  "Tyre set — HCV",
+  "Handheld barcode scanners",
+  "Stationery / labels",
+  "Hub supplies",
+];
 
 export default function ProcurementPage() {
-  const [pos, setPos] = useState(purchaseOrders);
-  const vendors = masterData.vendors;
+  const account = useSessionStore((s) => s.account);
+  const canEdit = canMutate(account?.role, "procurement");
+  const pos = useDeptStore((s) => s.purchaseOrders);
+  const createPO = useDeptStore((s) => s.createPO);
+  const deletePO = useDeptStore((s) => s.deletePO);
+  const advancePO = useDeptStore((s) => s.advancePO);
+  const vendors = useDemoStore((s) => s.vendors);
 
-  const markReceived = (id: string) => {
-    setPos((prev) =>
-      prev.map((p) =>
-        p.id === id ? { ...p, status: "received" as PurchaseOrder["status"] } : p
-      )
-    );
-  };
+  const [open, setOpen] = useState(false);
+  const [form, setForm] = useState({
+    vendor: vendors[0]?.name ?? "",
+    category: CATEGORIES[0],
+    amount: 50000,
+    eta: "2026-10-01",
+    hub: HUBS[0],
+  });
 
   return (
     <div>
@@ -28,6 +48,22 @@ export default function ProcurementPage() {
         eyebrow="Resources"
         title="Procurement"
         description="Purchase orders for packaging, fleet spares and hub supplies."
+        actions={
+          canEdit ? (
+            <Button
+              size="sm"
+              onClick={() => {
+                setForm((f) => ({
+                  ...f,
+                  vendor: f.vendor || vendors[0]?.name || "",
+                }));
+                setOpen(true);
+              }}
+            >
+              + PO
+            </Button>
+          ) : undefined
+        }
       />
       <RoleWorkQueue />
       <div className="mb-4 grid gap-3 sm:grid-cols-4">
@@ -97,14 +133,33 @@ export default function ProcurementPage() {
                       </StatusBadge>
                     </td>
                     <td className="px-4 py-3 text-right sm:px-5">
-                      {po.status === "ordered" || po.status === "partial" ? (
-                        <Button
-                          size="sm"
-                          variant="secondary"
-                          onClick={() => markReceived(po.id)}
-                        >
-                          Mark received
-                        </Button>
+                      {canEdit ? (
+                        <div className="flex flex-wrap justify-end gap-1">
+                          {po.status !== "closed" ? (
+                            <Button
+                              size="sm"
+                              variant="secondary"
+                              onClick={() => {
+                                advancePO(po.id);
+                                toast.success("PO advanced");
+                              }}
+                            >
+                              Advance
+                            </Button>
+                          ) : null}
+                          {po.status === "draft" ? (
+                            <Button
+                              size="sm"
+                              variant="danger"
+                              onClick={() => {
+                                deletePO(po.id);
+                                toast.message("Draft PO deleted");
+                              }}
+                            >
+                              Delete
+                            </Button>
+                          ) : null}
+                        </div>
                       ) : (
                         <span className="text-xs text-slate-400">—</span>
                       )}
@@ -148,6 +203,82 @@ export default function ProcurementPage() {
           </div>
         </Card>
       </div>
+
+      <EntityFormSheet
+        open={open}
+        onOpenChange={setOpen}
+        title="New purchase order"
+        description="Raise a PO for packaging, spares or hub supplies."
+        onSave={() => {
+          if (!form.vendor.trim() || !form.category.trim()) return;
+          createPO(form);
+          toast.success("Purchase order created");
+          setOpen(false);
+          setForm({
+            vendor: vendors[0]?.name ?? "",
+            category: CATEGORIES[0],
+            amount: 50000,
+            eta: "2026-10-01",
+            hub: HUBS[0],
+          });
+        }}
+      >
+        <div>
+          <Label>Vendor</Label>
+          <Select
+            value={form.vendor}
+            onChange={(e) => setForm((f) => ({ ...f, vendor: e.target.value }))}
+          >
+            {vendors.map((v) => (
+              <option key={v.id} value={v.name}>
+                {v.name}
+              </option>
+            ))}
+          </Select>
+        </div>
+        <div>
+          <Label>Category</Label>
+          <Select
+            value={form.category}
+            onChange={(e) =>
+              setForm((f) => ({ ...f, category: e.target.value }))
+            }
+          >
+            {CATEGORIES.map((c) => (
+              <option key={c}>{c}</option>
+            ))}
+          </Select>
+        </div>
+        <div>
+          <Label>Amount (₹)</Label>
+          <Input
+            type="number"
+            value={form.amount}
+            onChange={(e) =>
+              setForm((f) => ({ ...f, amount: Number(e.target.value) }))
+            }
+          />
+        </div>
+        <div>
+          <Label>ETA</Label>
+          <Input
+            type="date"
+            value={form.eta}
+            onChange={(e) => setForm((f) => ({ ...f, eta: e.target.value }))}
+          />
+        </div>
+        <div>
+          <Label>Hub</Label>
+          <Select
+            value={form.hub}
+            onChange={(e) => setForm((f) => ({ ...f, hub: e.target.value }))}
+          >
+            {HUBS.map((h) => (
+              <option key={h}>{h}</option>
+            ))}
+          </Select>
+        </div>
+      </EntityFormSheet>
     </div>
   );
 }

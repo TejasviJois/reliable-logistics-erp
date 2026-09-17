@@ -8,7 +8,8 @@ import { Card, CardHeader, KPIStat } from "@/components/ui/card";
 import { StatusBadge } from "@/components/ui/badge";
 import { MODE_LABEL, STATUS_LABEL, STATUS_TONE } from "@/lib/status";
 import { formatINR } from "@/lib/utils";
-import { masterData, useDemoStore } from "@/store/demo-store";
+import { useDemoStore } from "@/store/demo-store";
+import { toast } from "sonner";
 
 export default function CustomerDetailPage({
   params,
@@ -20,6 +21,7 @@ export default function CustomerDetailPage({
   const allDockets = useDemoStore((s) => s.dockets);
   const allInvoices = useDemoStore((s) => s.invoices);
   const allTickets = useDemoStore((s) => s.tickets);
+  const allContracts = useDemoStore((s) => s.contracts);
 
   const customer = useMemo(
     () => customers.find((c) => c.id === id),
@@ -39,8 +41,8 @@ export default function CustomerDetailPage({
     [allTickets, id]
   );
   const contracts = useMemo(
-    () => masterData.contracts.filter((c) => c.customerId === id),
-    [id]
+    () => allContracts.filter((c) => c.customerId === id),
+    [allContracts, id]
   );
 
   if (!customer) {
@@ -60,22 +62,33 @@ export default function CustomerDetailPage({
         description={`${customer.address} · GSTIN ${customer.gstin}`}
         actions={
           <>
-            <StatusBadge tone={customer.status === "active" ? "green" : "amber"}>
+            <StatusBadge
+              tone={
+                customer.status === "active"
+                  ? "green"
+                  : customer.status === "pending"
+                    ? "amber"
+                    : "slate"
+              }
+            >
               {customer.status}
             </StatusBadge>
             {customer.status === "pending" ? (
               <Button
                 size="sm"
                 variant="outline"
-                onClick={() => approveCustomer(customer.id)}
+                onClick={() => {
+                  approveCustomer(customer.id);
+                  toast.success(`${customer.name} approved for booking`);
+                }}
               >
                 Approve for booking
               </Button>
-            ) : (
+            ) : customer.status === "active" ? (
               <Button asChild size="sm">
                 <Link href="/bookings/new">Create shipment</Link>
               </Button>
-            )}
+            ) : null}
           </>
         }
       />

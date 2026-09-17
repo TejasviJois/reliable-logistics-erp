@@ -103,8 +103,27 @@ Roles and primary flows are aligned to `Logistics_ERP_User_Flows.pdf`.
 2. Record receipt against the invoice
 3. Outstanding decreases
 
-## Scene 16 — Close
-1. Open `/audit` to show the full activity trail
+## Scene 16 — Department create / work beats (role lens)
+
+Each beat: switch user → land on their workbench → create or advance something → confirm toast + `/audit`.
+
+| Role | Path | Beat |
+| --- | --- | --- |
+| Marketing | `/marketing` | **+ Campaign** → save → **Launch** → **+ Lead** → **Handoff to Sales** |
+| Sales Executive | `/crm` then `/customers` | **+ Lead** → advance stage → **+ Quotation** → mark won; **+ Customer** (pending) |
+| Fleet Manager | `/fleet` | **+ Vehicle** → set docs → **Maintenance** → edit capacity |
+| Procurement | `/procurement` | **+ PO** → **Order** → **Receive** → **Close** (or delete draft) |
+| HR Executive | `/hr` | **+ Employee** → **Approve/Reject leave** → **Process payroll** |
+| Legal & Compliance | `/compliance` | **+ Document** → **Start renewal** → **Complete** |
+| Sales / Ops (vendors) | `/vendors` | **+ Vendor** → edit → **Deactivate** |
+| Sales / Ops (contracts) | `/contracts` | **+ Contract** → edit tariff → **Deactivate** |
+| Customer Support | `/support` | **+ Ticket** → **Assign** → **Resolve** / **Close** |
+| Booking / Warehouse / Traffic / Delivery / POD / Billing / Collections | existing scenes | Keep ops mutations; cancel draft / gates as already demoed |
+
+Create / Edit / Delete buttons only show for the owning role (Admin sees all). Mutations persist in the browser session and write to the audit trail.
+
+## Scene 17 — Close
+1. Open `/audit` to show the full activity trail (ops + department CRUD)
 2. Optionally reopen `/bookings/dk-10231` for end-to-end status
 
 ---

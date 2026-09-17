@@ -5,23 +5,46 @@ import { PageHeader } from "@/components/ui/page";
 import { Card, CardHeader, KPIStat } from "@/components/ui/card";
 import { StatusBadge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Input, Label, Select } from "@/components/ui/input";
 import { RoleWorkQueue } from "@/components/role-work-queue";
+import { EntityFormSheet } from "@/components/entity-form-sheet";
 import { formatINR } from "@/lib/utils";
-import {
-  employees,
-  leaveRequests,
-  payrollRuns,
-  type LeaveRequest,
-} from "@/data/role-work";
+import { canMutate } from "@/data/can-mutate";
+import { useDeptStore } from "@/store/dept-store";
+import { useSessionStore } from "@/store/session-store";
+import { toast } from "sonner";
+
+const HUBS = ["Bengaluru Hub", "Chennai Hub", "Hyderabad Hub", "Mumbai Hub"];
+const DEPARTMENTS = [
+  "Warehouse",
+  "Booking",
+  "Delivery",
+  "Sales",
+  "Billing",
+  "Fleet",
+  "HR",
+];
 
 export default function HrPage() {
-  const [leaves, setLeaves] = useState(leaveRequests);
+  const account = useSessionStore((s) => s.account);
+  const canEdit = canMutate(account?.role, "hr");
+  const employees = useDeptStore((s) => s.employees);
+  const leaveRequests = useDeptStore((s) => s.leaveRequests);
+  const payrollRuns = useDeptStore((s) => s.payrollRuns);
+  const createEmployee = useDeptStore((s) => s.createEmployee);
+  const exitEmployee = useDeptStore((s) => s.exitEmployee);
+  const decideLeave = useDeptStore((s) => s.decideLeave);
+  const processPayroll = useDeptStore((s) => s.processPayroll);
 
-  const decide = (id: string, status: LeaveRequest["status"]) => {
-    setLeaves((prev) =>
-      prev.map((l) => (l.id === id ? { ...l, status } : l))
-    );
-  };
+  const [empOpen, setEmpOpen] = useState(false);
+  const [empForm, setEmpForm] = useState({
+    name: "",
+    role: "",
+    department: "Warehouse",
+    hub: "Bengaluru Hub",
+    ctc: 400000,
+    joinDate: new Date().toISOString().slice(0, 10),
+  });
 
   return (
     <div>
@@ -29,6 +52,13 @@ export default function HrPage() {
         eyebrow="Resources"
         title="HR & Payroll"
         description="Employee master, leave approvals and payroll runs for the hub."
+        actions={
+          canEdit ? (
+            <Button size="sm" onClick={() => setEmpOpen(true)}>
+              + Employee
+            </Button>
+          ) : undefined
+        }
       />
       <RoleWorkQueue />
       <div className="mb-3.5 grid gap-3 sm:grid-cols-4">
@@ -43,7 +73,7 @@ export default function HrPage() {
         />
         <KPIStat
           label="Leave pending"
-          value={leaves.filter((l) => l.status === "pending").length}
+          value={leaveRequests.filter((l) => l.status === "pending").length}
           tone="warning"
         />
         <KPIStat
@@ -70,7 +100,7 @@ export default function HrPage() {
                     {e.role} · {e.department} · {e.hub}
                   </p>
                 </div>
-                <div className="text-right">
+                <div className="flex flex-col items-end gap-1.5">
                   <StatusBadge
                     tone={
                       e.status === "active"
@@ -84,9 +114,21 @@ export default function HrPage() {
                   >
                     {e.status}
                   </StatusBadge>
-                  <p className="mt-1 font-data text-xs text-slate-500">
+                  <p className="font-data text-xs text-slate-500">
                     CTC {formatINR(e.ctc)}
                   </p>
+                  {canEdit && e.status !== "exited" ? (
+                    <Button
+                      size="sm"
+                      variant="danger"
+                      onClick={() => {
+                        exitEmployee(e.id);
+                        toast.message(`${e.name} marked exited`);
+                      }}
+                    >
+                      Exit employee
+                    </Button>
+                  ) : null}
                 </div>
               </li>
             ))}
@@ -97,7 +139,7 @@ export default function HrPage() {
           <Card>
             <CardHeader title="Leave requests" subtitle="Approvals" />
             <ul className="divide-y divide-border">
-              {leaves.map((l) => (
+              {leaveRequests.map((l) => (
                 <li key={l.id} className="px-4 py-2.5 sm:px-5">
                   <div className="flex items-start justify-between gap-2">
                     <div>
@@ -119,15 +161,24 @@ export default function HrPage() {
                       {l.status}
                     </StatusBadge>
                   </div>
-                  {l.status === "pending" ? (
+                  {canEdit && l.status === "pending" ? (
                     <div className="mt-2 flex gap-2">
-                      <Button size="sm" onClick={() => decide(l.id, "approved")}>
+                      <Button
+                        size="sm"
+                        onClick={() => {
+                          decideLeave(l.id, "approved");
+                          toast.success(`Leave approved for ${l.employee}`);
+                        }}
+                      >
                         Approve
                       </Button>
                       <Button
                         size="sm"
                         variant="secondary"
-                        onClick={() => decide(l.id, "rejected")}
+                        onClick={() => {
+                          decideLeave(l.id, "rejected");
+                          toast.message(`Leave rejected for ${l.employee}`);
+                        }}
                       >
                         Reject
                       </Button>
@@ -154,7 +205,7 @@ export default function HrPage() {
                       {p.headcount} employees · Gross {formatINR(p.gross)}
                     </p>
                   </div>
-                  <div className="text-right">
+                  <div className="flex flex-col items-end gap-1.5">
                     <StatusBadge
                       tone={
                         p.status === "paid"
@@ -166,9 +217,25 @@ export default function HrPage() {
                     >
                       {p.status}
                     </StatusBadge>
-                    <p className="mt-1 font-data text-xs text-slate-500">
+                    <p className="font-data text-xs text-slate-500">
                       Net {formatINR(p.net)}
                     </p>
+                    {canEdit && p.status !== "paid" ? (
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => {
+                          processPayroll(p.id);
+                          toast.success(
+                            p.status === "draft"
+                              ? "Payroll processing"
+                              : "Payroll paid"
+                          );
+                        }}
+                      >
+                        Process
+                      </Button>
+                    ) : null}
                   </div>
                 </li>
               ))}
@@ -176,6 +243,90 @@ export default function HrPage() {
           </Card>
         </div>
       </div>
+
+      <EntityFormSheet
+        open={empOpen}
+        onOpenChange={setEmpOpen}
+        title="New employee"
+        description="Add a person to the hub employee master."
+        onSave={() => {
+          if (!empForm.name.trim() || !empForm.role.trim()) return;
+          createEmployee(empForm);
+          toast.success("Employee created");
+          setEmpOpen(false);
+          setEmpForm({
+            name: "",
+            role: "",
+            department: "Warehouse",
+            hub: "Bengaluru Hub",
+            ctc: 400000,
+            joinDate: new Date().toISOString().slice(0, 10),
+          });
+        }}
+      >
+        <div>
+          <Label>Name</Label>
+          <Input
+            value={empForm.name}
+            onChange={(e) =>
+              setEmpForm((f) => ({ ...f, name: e.target.value }))
+            }
+          />
+        </div>
+        <div>
+          <Label>Role</Label>
+          <Input
+            value={empForm.role}
+            onChange={(e) =>
+              setEmpForm((f) => ({ ...f, role: e.target.value }))
+            }
+          />
+        </div>
+        <div>
+          <Label>Department</Label>
+          <Select
+            value={empForm.department}
+            onChange={(e) =>
+              setEmpForm((f) => ({ ...f, department: e.target.value }))
+            }
+          >
+            {DEPARTMENTS.map((d) => (
+              <option key={d}>{d}</option>
+            ))}
+          </Select>
+        </div>
+        <div>
+          <Label>Hub</Label>
+          <Select
+            value={empForm.hub}
+            onChange={(e) => setEmpForm((f) => ({ ...f, hub: e.target.value }))}
+          >
+            {HUBS.map((h) => (
+              <option key={h}>{h}</option>
+            ))}
+          </Select>
+        </div>
+        <div>
+          <Label>CTC (₹)</Label>
+          <Input
+            type="number"
+            value={empForm.ctc}
+            onChange={(e) =>
+              setEmpForm((f) => ({ ...f, ctc: Number(e.target.value) }))
+            }
+          />
+        </div>
+        <div>
+          <Label>Join date</Label>
+          <Input
+            type="date"
+            value={empForm.joinDate}
+            onChange={(e) =>
+              setEmpForm((f) => ({ ...f, joinDate: e.target.value }))
+            }
+          />
+        </div>
+      </EntityFormSheet>
     </div>
   );
 }
