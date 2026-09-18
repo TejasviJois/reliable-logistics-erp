@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
-import { Sidebar } from "@/components/sidebar";
+import { MobileNavSheet, Sidebar } from "@/components/sidebar";
 import { Topbar } from "@/components/topbar";
 import { DetailDrawer } from "@/components/detail-drawer";
 import { TutorialGuide } from "@/components/tutorial-guide";
@@ -70,9 +70,10 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   return (
     <div className="flex h-dvh overflow-hidden bg-background">
       <Sidebar />
+      <MobileNavSheet />
       <div className="app-canvas flex min-h-0 min-w-0 flex-1 flex-col">
         <Topbar />
-        <main className="min-h-0 flex-1 overflow-y-auto px-5 py-5 lg:px-7">
+        <main className="min-h-0 flex-1 overflow-y-auto overflow-x-hidden px-3 py-4 pb-[max(1rem,env(safe-area-inset-bottom))] sm:px-5 sm:py-5 lg:px-7">
           {children}
         </main>
       </div>

@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import { LogOut, Search, UsersRound } from "lucide-react";
+import { LogOut, Menu, Search, UsersRound } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -24,6 +24,7 @@ import {
 import { masterData, useDemoStore } from "@/store/demo-store";
 import { useSessionStore } from "@/store/session-store";
 import { useTutorialStore } from "@/store/tutorial-store";
+import { useMobileNavStore } from "@/store/mobile-nav-store";
 import { STATUS_LABEL } from "@/lib/status";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
@@ -39,6 +40,7 @@ export function Topbar() {
   const modeOn = useTutorialStore((s) => s.modeOn);
   const setModeOn = useTutorialStore((s) => s.setModeOn);
   const startTour = useTutorialStore((s) => s.startTour);
+  const setMobileNavOpen = useMobileNavStore((s) => s.setOpen);
   const [open, setOpen] = useState(false);
   const [q, setQ] = useState("");
 
@@ -71,10 +73,35 @@ export function Topbar() {
     toast.message("View scope updated", { description: label });
   };
 
+  const onTutorialToggle = (on: boolean) => {
+    setModeOn(on);
+    if (on) {
+      toast.message("Tutorial mode on", {
+        description:
+          "Start the floating tour — Next walks each control, Finish shows the next role.",
+      });
+      if (account) startTour(account.role);
+    } else {
+      toast.message("Tutorial mode off");
+    }
+  };
+
   return (
     <>
-      <header className="app-topbar sticky top-0 z-30 flex h-14 items-center justify-between gap-3 border-b border-[var(--border)] px-5 backdrop-blur-md">
-        <div className="flex min-w-0 items-center gap-3">
+      <header className="app-topbar sticky top-0 z-30 flex h-14 items-center justify-between gap-2 border-b border-[var(--border)] px-3 pt-[env(safe-area-inset-top)] backdrop-blur-md sm:gap-3 sm:px-5">
+        <div className="flex min-w-0 flex-1 items-center gap-2 sm:gap-3">
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon"
+            className="shrink-0 lg:hidden"
+            aria-label="Open navigation"
+            data-tour="mobile-nav-toggle"
+            onClick={() => setMobileNavOpen(true)}
+          >
+            <Menu className="h-5 w-5" />
+          </Button>
+
           {isAdmin ? (
             <Select
               value={branchId === NETWORK_ALL || !branchId ? NETWORK_ALL : branchId}
@@ -82,7 +109,7 @@ export function Topbar() {
             >
               <SelectTrigger
                 size="sm"
-                className="flex h-8 w-[11.5rem] border-[var(--border)] bg-white/90 shadow-[var(--shadow-xs)]"
+                className="h-8 w-[8.25rem] shrink-0 border-[var(--border)] bg-white/90 shadow-[var(--shadow-xs)] sm:w-[11.5rem]"
                 data-tour="topbar-hub"
               >
                 <SelectValue placeholder="Select hub" />
@@ -97,57 +124,69 @@ export function Topbar() {
               </SelectContent>
             </Select>
           ) : (
-            <div className="hidden h-8 items-center rounded-lg bg-slate-50 px-2.5 text-xs font-medium text-slate-600 ring-1 ring-[var(--border)] sm:flex">
+            <div className="hidden h-8 max-w-[9rem] shrink-0 items-center truncate rounded-lg bg-slate-50 px-2.5 text-xs font-medium text-slate-600 ring-1 ring-[var(--border)] sm:flex">
               {account?.branchLabel ??
                 masterData.branches.find((b) => b.id === branchId)?.name ??
                 "Hub"}
             </div>
           )}
+
           <button
             type="button"
             onClick={() => setOpen(true)}
-            className="pressable flex items-center gap-2 rounded-lg border border-[var(--border)] bg-white px-3 py-1.5 text-xs text-slate-500 shadow-[var(--shadow-xs)]"
+            className="pressable flex min-w-0 flex-1 items-center gap-2 rounded-lg border border-[var(--border)] bg-white px-2.5 py-1.5 text-xs text-slate-500 shadow-[var(--shadow-xs)] sm:flex-none sm:px-3"
             data-tour="topbar-search"
           >
-            <Search className="h-3.5 w-3.5" />
-            <span className="hidden sm:inline">
+            <Search className="h-3.5 w-3.5 shrink-0" />
+            <span className="hidden truncate sm:inline">
               Search dockets, customers, invoices…
             </span>
-            <span className="sm:hidden">Search</span>
+            <span className="truncate sm:hidden">Search</span>
             <kbd className="ml-1 hidden rounded border border-[var(--border)] bg-slate-50 px-1.5 py-0.5 font-data text-[10px] sm:inline">
               ⌘K
             </kbd>
           </button>
         </div>
-        <div className="flex items-center gap-2">
-          <div className="flex items-center gap-2 rounded-lg border border-border bg-white/80 px-2.5 py-1">
+
+        <div className="flex shrink-0 items-center gap-1.5 sm:gap-2">
+          <div className="flex items-center gap-1.5 rounded-lg border border-border bg-white/80 px-2 py-1 sm:gap-2 sm:px-2.5">
             <Switch
               id="tutorial-mode"
               checked={modeOn}
-              onCheckedChange={(on) => {
-                setModeOn(on);
-                if (on) {
-                  toast.message("Tutorial mode on", {
-                    description:
-                      "Start the floating tour — Next walks each control, Finish shows the next role.",
-                  });
-                  if (account) startTour(account.role);
-                } else {
-                  toast.message("Tutorial mode off");
-                }
-              }}
+              onCheckedChange={onTutorialToggle}
             />
             <Label
               htmlFor="tutorial-mode"
-              className="cursor-pointer text-[11px] font-semibold text-slate-600"
+              className="hidden cursor-pointer text-[11px] font-semibold text-slate-600 sm:inline"
             >
               Tutorial
             </Label>
           </div>
-          <Button variant="secondary" size="sm" onClick={switchAccount}>
+
+          <Button
+            variant="secondary"
+            size="sm"
+            className="hidden sm:inline-flex"
+            onClick={switchAccount}
+          >
             <UsersRound className="h-3.5 w-3.5" />
             Switch user
           </Button>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant="secondary"
+                size="icon"
+                className="sm:hidden"
+                onClick={switchAccount}
+                aria-label="Switch user"
+              >
+                <UsersRound className="h-3.5 w-3.5" />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent side="bottom">Switch user</TooltipContent>
+          </Tooltip>
+
           <Separator orientation="vertical" className="mx-0.5 hidden h-7 sm:block" />
           <div className="hidden items-center gap-2 rounded-md border border-border bg-white/70 px-2 py-1 sm:flex">
             <Avatar size="sm">
@@ -318,7 +357,7 @@ function CommandPalette({
   }, [query, dockets, customers, invoices, vehicles, pods, tickets]);
 
   return (
-    <div className="fixed inset-0 z-[60] flex items-start justify-center bg-slate-900/40 pt-[12vh]">
+    <div className="fixed inset-0 z-[60] flex items-start justify-center bg-slate-900/40 px-3 pt-[max(12vh,env(safe-area-inset-top))]">
       <button className="absolute inset-0" aria-label="Close" onClick={onClose} />
       <div className="relative w-full max-w-xl overflow-hidden rounded-xl border border-border bg-white shadow-2xl">
         <div className="flex items-center gap-2 border-b border-border px-3">
@@ -331,7 +370,7 @@ function CommandPalette({
             className="border-0 shadow-none focus-visible:ring-0"
           />
         </div>
-        <ul className="max-h-80 overflow-y-auto p-2">
+        <ul className="max-h-[min(20rem,60dvh)] overflow-y-auto p-2">
           {results.length === 0 ? (
             <li className="px-3 py-6 text-center text-sm text-slate-500">
               No matches

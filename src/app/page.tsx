@@ -392,7 +392,7 @@ export default function OperationsOverviewPage() {
             </Link>
           }
         />
-        <div className="grid gap-3 px-4 py-4 sm:grid-cols-7">
+        <div className="grid grid-cols-2 gap-3 px-4 py-4 sm:grid-cols-3 lg:grid-cols-7">
           {pipeline.map((stage) => (
             <div key={stage.key} className="min-w-0">
               <p className="text-[11px] font-medium text-slate-500">{stage.label}</p>

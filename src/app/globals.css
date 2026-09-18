@@ -159,6 +159,15 @@ body {
   white-space: nowrap;
 }
 
+/* Horizontal registers — wrap tables so phones scroll without blowing the shell */
+.app-table-scroll {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-x: contain;
+}
+
 .app-table tbody td {
   vertical-align: middle;
 }
