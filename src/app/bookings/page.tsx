@@ -98,6 +98,7 @@ export default function BookingsPage() {
                       <Link
                         href={`/bookings/${d.id}`}
                         className="text-xs font-semibold text-primary"
+                        data-tour={index === 0 ? "bookings-open" : undefined}
                       >
                         Open
                       </Link>

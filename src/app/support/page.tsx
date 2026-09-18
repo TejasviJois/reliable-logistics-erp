@@ -88,7 +88,7 @@ export default function SupportPage() {
         />
       </div>
       <div className="grid gap-3.5 xl:grid-cols-2" data-tour="support-queue">
-        {tickets.map((t) => {
+        {tickets.map((t, index) => {
           const c = customers.find((x) => x.id === t.customerId);
           const d = dockets.find((x) => x.id === t.docketId);
           return (
@@ -115,6 +115,9 @@ export default function SupportPage() {
                       <Button
                         size="sm"
                         variant="outline"
+                        data-tour={
+                          index === 0 ? "support-assign" : undefined
+                        }
                         onClick={() => {
                           const owner = account?.name || "Support Desk";
                           assignTicket(t.id, owner);
@@ -127,6 +130,7 @@ export default function SupportPage() {
                     {t.status === "open" || t.status === "in_progress" ? (
                       <Button
                         size="sm"
+                        data-tour={index === 0 ? "support-resolve" : undefined}
                         onClick={() => {
                           resolveTicket(t.id);
                           toast.success("Ticket resolved");
@@ -139,6 +143,7 @@ export default function SupportPage() {
                       <Button
                         size="sm"
                         variant="secondary"
+                        data-tour={index === 0 ? "support-close" : undefined}
                         onClick={() => {
                           closeTicket(t.id);
                           toast.message("Ticket closed");

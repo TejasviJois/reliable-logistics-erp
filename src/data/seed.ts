@@ -19,7 +19,29 @@ import type {
   Vendor,
   Vehicle,
   WarehouseException,
+  HubScanEvent,
 } from "@/types";
+import {
+  bulkAudit,
+  bulkBths,
+  bulkContracts,
+  bulkCustomers,
+  bulkDrivers,
+  bulkDockets,
+  bulkHubScans,
+  bulkInvoices,
+  bulkManifests,
+  bulkNetworkLocations,
+  bulkPods,
+  bulkReceipts,
+  bulkTariffZones,
+  bulkThcs,
+  bulkTickets,
+  bulkTrips,
+  bulkVehicles,
+  bulkVendors,
+  bulkWarehouseExceptions,
+} from "@/data/seed-bulk";
 
 export const branches: Branch[] = [
   { id: "br-blr", name: "Bengaluru Hub", city: "Bengaluru" },
@@ -137,6 +159,7 @@ export const customers: Customer[] = [
     contractedModes: [],
     outstanding: 0,
   },
+  ...bulkCustomers,
 ];
 
 export const contracts: Contract[] = [
@@ -173,6 +196,7 @@ export const contracts: Contract[] = [
     effectiveTo: "2026-12-31",
     status: "approved",
   },
+  ...bulkContracts,
 ];
 
 export const vendors: Vendor[] = [
@@ -192,6 +216,7 @@ export const vendors: Vendor[] = [
     rating: 4.1,
     phone: "+91 98765 44332",
   },
+  ...bulkVendors,
 ];
 
 export const drivers: Driver[] = [
@@ -216,6 +241,7 @@ export const drivers: Driver[] = [
     license: "KA-01-2021-112233",
     status: "available",
   },
+  ...bulkDrivers,
 ];
 
 export const vehicles: Vehicle[] = [
@@ -299,6 +325,7 @@ export const vehicles: Vehicle[] = [
     lat: 12.9352,
     lng: 77.6245,
   },
+  ...bulkVehicles,
 ];
 
 function boxes(docketId: string, count: number, scanned: number): Docket["boxes"] {
@@ -595,6 +622,7 @@ export const seedDockets: Docket[] = [
     updatedAt: "2026-09-16T20:00:00+05:30",
     boxes: boxes("dk-10228", 5, 5),
   },
+  ...bulkDockets,
 ];
 
 export const seedTrips: Trip[] = [
@@ -748,6 +776,7 @@ export const seedTrips: Trip[] = [
     ],
     estimatedCost: 21000,
   },
+  ...bulkTrips,
 ];
 
 export const seedManifests: Manifest[] = [
@@ -761,6 +790,7 @@ export const seedManifests: Manifest[] = [
     status: "dispatched",
     createdAt: "2026-09-16T05:40:00+05:30",
   },
+  ...bulkManifests,
 ];
 
 export const seedPods: POD[] = [
@@ -804,6 +834,7 @@ export const seedPods: POD[] = [
     imageLabel: "POD scan — DK-10155",
     createdAt: "2026-09-13T12:10:00+05:30",
   },
+  ...bulkPods,
 ];
 
 export const seedInvoices: Invoice[] = [
@@ -816,6 +847,11 @@ export const seedInvoices: Invoice[] = [
     dueDate: "2026-10-18",
     subtotal: 18450,
     gst: 3321,
+    cgst: 1661,
+    sgst: 1660,
+    igst: 0,
+    hsn: "996511",
+    placeOfSupply: "KA",
     total: 21771,
     status: "draft",
     amountReceived: 0,
@@ -829,6 +865,11 @@ export const seedInvoices: Invoice[] = [
     dueDate: "2026-10-13",
     subtotal: 11250,
     gst: 2025,
+    cgst: 0,
+    sgst: 0,
+    igst: 2025,
+    hsn: "996511",
+    placeOfSupply: "KA",
     total: 13275,
     status: "paid",
     amountReceived: 13275,
@@ -842,6 +883,11 @@ export const seedInvoices: Invoice[] = [
     dueDate: "2026-10-16",
     subtotal: 13000,
     gst: 2340,
+    cgst: 1170,
+    sgst: 1170,
+    igst: 0,
+    hsn: "996511",
+    placeOfSupply: "TN",
     total: 15340,
     status: "issued",
     amountReceived: 0,
@@ -855,10 +901,16 @@ export const seedInvoices: Invoice[] = [
     dueDate: "2026-10-16",
     subtotal: 2365,
     gst: 426,
+    cgst: 213,
+    sgst: 213,
+    igst: 0,
+    hsn: "996511",
+    placeOfSupply: "KA",
     total: 2791,
     status: "issued",
     amountReceived: 0,
   },
+  ...bulkInvoices,
 ];
 
 export const seedReceipts: Receipt[] = [
@@ -871,6 +923,7 @@ export const seedReceipts: Receipt[] = [
     mode: "NEFT",
     receivedAt: "2026-09-15T11:30:00+05:30",
   },
+  ...bulkReceipts,
 ];
 
 export const seedTickets: Ticket[] = [
@@ -919,6 +972,7 @@ export const seedTickets: Ticket[] = [
       },
     ],
   },
+  ...bulkTickets,
 ];
 
 export const seedThcs: THC[] = [
@@ -933,6 +987,7 @@ export const seedThcs: THC[] = [
     status: "approved",
     createdAt: "2026-09-16T05:50:00+05:30",
   },
+  ...bulkThcs,
 ];
 
 export const seedAudit: AuditEvent[] = [
@@ -969,6 +1024,7 @@ export const seedAudit: AuditEvent[] = [
     previous: "POD Pending",
     next: "POD Approved",
   },
+  ...bulkAudit,
 ];
 
 export const seedNetworkLocations: NetworkLocation[] = [
@@ -1037,6 +1093,7 @@ export const seedNetworkLocations: NetworkLocation[] = [
     pin: "635109",
     parentId: "loc-south",
   },
+  ...bulkNetworkLocations,
 ];
 
 export const seedWarehouseExceptions: WarehouseException[] = [
@@ -1051,6 +1108,7 @@ export const seedWarehouseExceptions: WarehouseException[] = [
     status: "open",
     createdAt: "2026-09-16T11:20:00+05:30",
   },
+  ...bulkWarehouseExceptions,
 ];
 
 export const seedBths: BTH[] = [
@@ -1065,6 +1123,7 @@ export const seedBths: BTH[] = [
     utr: "UTR4829103341",
     createdAt: "2026-09-17T10:00:00+05:30",
   },
+  ...bulkBths,
 ];
 
 export const seedTariffZones: TariffZone[] = [
@@ -1090,4 +1149,7 @@ export const seedTariffZones: TariffZone[] = [
     minFreight: 14500,
     cftFactor: 0,
   },
+  ...bulkTariffZones,
 ];
+
+export const seedHubScans: HubScanEvent[] = [...bulkHubScans];

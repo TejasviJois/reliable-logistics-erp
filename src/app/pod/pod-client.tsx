@@ -94,6 +94,7 @@ export default function PodPage() {
             ).map(([id, label]) => (
               <button
                 key={id}
+                data-tour={id === "attention" ? "pod-filter-attention" : undefined}
                 onClick={() => setFilter(id)}
                 className={`rounded-md px-2.5 py-1 text-[11px] font-semibold transition-colors ${
                   filter === id
@@ -151,7 +152,7 @@ export default function PodPage() {
                 signature, seal and delivery time for verification.
               </p>
               <div className="mt-4 grid gap-3 sm:grid-cols-2">
-                <div>
+                <div data-tour="pod-intake-channel">
                   <Label>Intake channel</Label>
                   <Select
                     value={intakeChannel}
@@ -162,7 +163,10 @@ export default function PodPage() {
                     <option value="DRIVER_APP">Driver app</option>
                   </Select>
                 </div>
-                <div className="flex items-end gap-4 pb-1 text-xs text-slate-600">
+                <div
+                  className="flex items-end gap-4 pb-1 text-xs text-slate-600"
+                  data-tour="pod-evidence"
+                >
                   <label className="flex items-center gap-1.5">
                     <input type="checkbox" defaultChecked className="accent-[var(--primary)]" />
                     Signature
@@ -220,7 +224,10 @@ export default function PodPage() {
                   {pod.status}
                 </StatusBadge>
               </div>
-              <div className="grid gap-0 lg:grid-cols-3">
+              <div
+                className="grid gap-0 lg:grid-cols-3"
+                data-tour="pod-review-panel"
+              >
                 <div className="border-b border-border p-4 lg:border-b-0 lg:border-r">
                   <p className="mb-2 text-[11px] font-semibold uppercase text-slate-400">
                     POD document
@@ -347,13 +354,21 @@ export default function PodPage() {
                   <Button
                     variant="secondary"
                     onClick={() => requestPodReview(pod.id)}
+                    data-tour="pod-review"
                   >
                     Request review
                   </Button>
-                  <Button variant="danger" onClick={() => rejectPod(pod.id)}>
+                  <Button
+                    variant="danger"
+                    onClick={() => rejectPod(pod.id)}
+                    data-tour="pod-reject"
+                  >
                     Reject
                   </Button>
-                  <p className="w-full text-xs leading-relaxed text-slate-500">
+                  <p
+                    className="w-full text-xs leading-relaxed text-slate-500"
+                    data-tour="pod-billing-unlock"
+                  >
                     Confirm delivery evidence before approving. Billing unlocks
                     only after POD approval for TBB dockets.
                   </p>

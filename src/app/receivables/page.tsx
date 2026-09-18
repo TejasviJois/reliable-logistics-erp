@@ -139,15 +139,21 @@ export default function ReceivablesPage() {
           variant="line"
           className="h-auto w-full flex-wrap justify-start gap-0"
         >
-          <TabsTrigger value="dashboard">Dashboard</TabsTrigger>
+          <TabsTrigger value="dashboard" data-tour="ar-dashboard-tab">
+            Dashboard
+          </TabsTrigger>
           <TabsTrigger value="receipt-entry" data-tour="ar-receipt">
             Receipt Entry
           </TabsTrigger>
-          <TabsTrigger value="outstanding">Outstanding</TabsTrigger>
+          <TabsTrigger value="outstanding" data-tour="ar-outstanding">
+            Outstanding
+          </TabsTrigger>
           <TabsTrigger value="aging" data-tour="ar-aging">
             Aging
           </TabsTrigger>
-          <TabsTrigger value="receipt-history">Receipt History</TabsTrigger>
+          <TabsTrigger value="receipt-history" data-tour="ar-history">
+            Receipt History
+          </TabsTrigger>
         </TabsList>
 
         <TabsContent value="dashboard" className="space-y-3.5">
@@ -303,7 +309,7 @@ export default function ReceivablesPage() {
               </div>
             </Card>
 
-            <Card>
+            <Card data-tour="ar-receipt-form">
               <CardHeader title="Record receipt" subtitle="Allocate payment" />
               <div className="space-y-3 px-4 py-4 sm:px-5">
                 <div>

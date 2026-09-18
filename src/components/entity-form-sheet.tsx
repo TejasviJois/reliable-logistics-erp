@@ -36,7 +36,11 @@ export function EntityFormSheet({
 }) {
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent side="right" className="w-full sm:max-w-md">
+      <SheetContent
+        side="right"
+        className="w-full sm:max-w-md"
+        data-tour="entity-sheet"
+      >
         <SheetHeader>
           <SheetTitle>{title}</SheetTitle>
           {description ? (
@@ -65,7 +69,12 @@ export function EntityFormSheet({
             >
               Cancel
             </Button>
-            <Button type="button" disabled={busy} onClick={onSave}>
+            <Button
+              type="button"
+              disabled={busy}
+              onClick={onSave}
+              data-tour="entity-sheet-save"
+            >
               {saveLabel}
             </Button>
           </div>

@@ -137,7 +137,10 @@ export default function TrafficPage() {
       />
       <RoleWorkQueue />
 
-      <div className="mb-3.5 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+      <div
+        className="mb-3.5 grid gap-3 sm:grid-cols-2 xl:grid-cols-4"
+        data-tour="traffic-kpis"
+      >
         <KPIStat label="Pending dockets" value={pendingLoad.length} />
         <KPIStat label="Pending packages" value={pendingPkgs} />
         <KPIStat label="Pending tonnage" value={`${pendingTons.toFixed(2)}T`} />
@@ -248,26 +251,30 @@ export default function TrafficPage() {
                 );
               })}
             </ul>
-            <div className="border-t border-border p-4">
-              {gateHints.length ? (
-                <ul className="mb-3 space-y-1">
-                  {gateHints.map((g) => (
-                    <li
-                      key={g.label}
-                      className={`text-xs ${g.ok ? "text-emerald-700" : "text-amber-700"}`}
-                    >
-                      {g.ok ? "✓" : "○"} {g.label}
+              <div className="border-t border-border p-4">
+                <ul className="mb-3 space-y-1" data-tour="traffic-gates">
+                  {gateHints.length ? (
+                    gateHints.map((g) => (
+                      <li
+                        key={g.label}
+                        className={`text-xs ${g.ok ? "text-emerald-700" : "text-amber-700"}`}
+                      >
+                        {g.ok ? "✓" : "○"} {g.label}
+                      </li>
+                    ))
+                  ) : (
+                    <li className="text-xs text-slate-500">
+                      Select a load to see scan / e-way gates
                     </li>
-                  ))}
+                  )}
                 </ul>
-              ) : null}
-              <Button
-                className="w-full"
-                data-tour="traffic-dispatch"
-                onClick={onDispatch}
-              >
-                Confirm dispatch
-              </Button>
+                <Button
+                  className="w-full"
+                  data-tour="traffic-dispatch"
+                  onClick={onDispatch}
+                >
+                  Confirm dispatch
+                </Button>
               {dispatchedMsg ? (
                 <p
                   className={`mt-2 text-xs font-medium ${

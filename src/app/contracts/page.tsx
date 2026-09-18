@@ -72,7 +72,11 @@ export default function ContractsPage() {
                 + Contract
               </Button>
             ) : (
-              <Button size="sm" onClick={() => setZoneOpen(true)}>
+              <Button
+                size="sm"
+                onClick={() => setZoneOpen(true)}
+                data-tour="contracts-new-zone"
+              >
                 + Tariff zone
               </Button>
             )
@@ -90,6 +94,7 @@ export default function ContractsPage() {
           <button
             key={id}
             type="button"
+            data-tour={id === "zoning" ? "contracts-zoning-tab" : "contracts-tab"}
             onClick={() => setTab(id)}
             className={cn(
               "rounded-lg px-4 py-2 text-sm font-semibold transition-colors",

@@ -493,7 +493,7 @@ export default function OperationsOverviewPage() {
       </div>
 
       <div className="grid gap-4 xl:grid-cols-[1.55fr_1fr]">
-        <Card>
+        <Card data-tour="overview-dockets">
           <CardHeader
             subtitle="Live network"
             title="Docket visibility"

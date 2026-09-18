@@ -132,6 +132,7 @@ export default function FleetPage() {
                       <Button
                         size="sm"
                         variant="outline"
+                        data-tour={index === 0 ? "fleet-maintenance" : undefined}
                         onClick={() => {
                           setVehicleMaintenance(v.id);
                           toast.success("Marked for maintenance");
@@ -142,6 +143,7 @@ export default function FleetPage() {
                       <Button
                         size="sm"
                         variant="secondary"
+                        data-tour={index === 0 ? "fleet-renew" : undefined}
                         onClick={() => {
                           renewVehicleDocs(v.id);
                           toast.success("Documents renewed");

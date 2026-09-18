@@ -73,11 +73,12 @@ export default function CreateDocketPage() {
       />
       <div className="grid gap-3.5 xl:grid-cols-[1fr_320px]">
         <Card className="p-5">
-          <div className="mb-5 flex flex-wrap gap-1.5">
+          <div className="mb-5 flex flex-wrap gap-1.5" data-tour="bookings-wizard-steps">
             {steps.map((s, i) => (
               <button
                 key={s}
                 type="button"
+                data-tour={`bookings-wizard-step-${i}`}
                 onClick={() => setStep(i)}
                 className={cn(
                   "rounded-md px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.06em] transition-colors",

@@ -336,7 +336,7 @@ export default function TrackingPage() {
                 </div>
 
                 <div className="flex flex-wrap gap-2">
-                  <Button size="sm" onClick={publish}>
+                  <Button size="sm" onClick={publish} data-tour="tracking-publish">
                     Publish progress
                   </Button>
                   <Button
@@ -377,6 +377,7 @@ export default function TrackingPage() {
                   <Button
                     size="sm"
                     variant="ghost"
+                    data-tour="tracking-copy-link"
                     onClick={async () => {
                       const link = `${window.location.origin}/public/tracking/${trip.publicToken ?? `trk-${trip.id}`}`;
                       try {

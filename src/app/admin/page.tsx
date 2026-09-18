@@ -135,14 +135,19 @@ export default function AdminPage() {
         title="Access control"
         description="Grant modules by role template, then override per user. Changes apply immediately to navigation."
         actions={
-          <Button variant="secondary" size="sm" onClick={resetAll}>
+          <Button
+            variant="secondary"
+            size="sm"
+            onClick={resetAll}
+            data-tour="admin-reset"
+          >
             Reset defaults
           </Button>
         }
       />
       <RoleWorkQueue />
 
-      <div className="mb-4 grid gap-3 sm:grid-cols-4">
+      <div className="mb-4 grid gap-3 sm:grid-cols-4" data-tour="admin-access-kpis">
         <KPIStat label="Demo users" value={DEMO_ACCOUNTS.length} />
         <KPIStat label="Roles" value={ROLE_OPTIONS.length} />
         <KPIStat label="User overrides" value={overrideCount} />
@@ -172,7 +177,9 @@ export default function AdminPage() {
                   ? "admin-users-tab"
                   : id === "network"
                     ? "admin-network-tab"
-                    : undefined
+                    : id === "executive"
+                      ? "admin-executive-tab"
+                      : undefined
             }
             onClick={() => setTab(id)}
             className={cn(
@@ -309,6 +316,7 @@ export default function AdminPage() {
                       setUserEnabled(selectedUser.id, !userEnabled)
                     }
                     disabled={selectedUser.role === "admin"}
+                    data-tour="admin-user-enable"
                   >
                     {userEnabled ? "Disable login" : "Enable login"}
                   </Button>
@@ -377,12 +385,16 @@ export default function AdminPage() {
               title="Network locations"
               subtitle="Regions, branches, booking offices and hubs"
               action={
-                <Button size="sm" onClick={() => setNetworkOpen(true)}>
+                <Button
+                  size="sm"
+                  onClick={() => setNetworkOpen(true)}
+                  data-tour="admin-network-create"
+                >
                   + Location
                 </Button>
               }
             />
-            <div className="overflow-x-auto">
+            <div className="overflow-x-auto" data-tour="admin-network-table">
               <table className="app-table w-full text-left text-sm">
                 <thead className="border-b border-[var(--border)]">
                   <tr>
@@ -535,7 +547,10 @@ export default function AdminPage() {
           </EntityFormSheet>
         </div>
       ) : (
-        <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+        <div
+          className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4"
+          data-tour="admin-executive-kpis"
+        >
           <KPIStat label="Dockets today" value={docketsToday} />
           <KPIStat label="Trips in transit" value={tripsInTransit} />
           <KPIStat
@@ -634,6 +649,11 @@ function ModuleChecklist({
               return (
                 <label
                   key={m.href}
+                  data-tour={
+                    modules.indexOf(m) === 0 && group === groups[0]?.[0]
+                      ? "admin-module-toggle"
+                      : undefined
+                  }
                   className={cn(
                     "flex cursor-pointer items-center gap-2.5 rounded-xl border px-3 py-2.5 text-sm transition-colors",
                     on

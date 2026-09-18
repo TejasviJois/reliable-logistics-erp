@@ -285,7 +285,7 @@ export default function BillingPage() {
           </Card>
         </div>
 
-        <Card className="h-fit">
+        <Card className="h-fit" data-tour="billing-tax-preview">
           <CardHeader title="Invoice preview" subtitle="Live calculation" />
           <div className="px-4 py-4 sm:px-5">
           {preview && selected ? (

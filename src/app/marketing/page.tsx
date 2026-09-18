@@ -71,7 +71,7 @@ export default function MarketingPage() {
         }
       />
       <RoleWorkQueue />
-      <div className="mb-4 grid gap-3 sm:grid-cols-4">
+      <div className="mb-4 grid gap-3 sm:grid-cols-4" data-tour="marketing-kpis">
         <KPIStat label="Campaigns" value={campaigns.length} />
         <KPIStat
           label="Live"
@@ -145,6 +145,13 @@ export default function MarketingPage() {
                         <Button
                           size="sm"
                           variant="secondary"
+                          data-tour={
+                            c.status === "live" &&
+                            campaigns.findIndex((x) => x.id === c.id) ===
+                              campaigns.findIndex((x) => x.status === "live")
+                              ? "marketing-complete"
+                              : undefined
+                          }
                           onClick={() => {
                             completeCampaign(c.id);
                             toast.success("Campaign completed");

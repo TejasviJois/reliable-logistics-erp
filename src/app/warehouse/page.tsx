@@ -256,18 +256,25 @@ export default function WarehousePage() {
 
       <Tabs defaultValue="control" className="gap-3.5">
         <TabsList className="h-auto w-full flex-wrap justify-start sm:w-fit">
-          <TabsTrigger value="control">Control</TabsTrigger>
+          <TabsTrigger value="control" data-tour="wh-tab-control">
+            Control
+          </TabsTrigger>
           <TabsTrigger value="scan" data-tour="wh-tab-scan">
             Scan
           </TabsTrigger>
           <TabsTrigger value="manifests" data-tour="wh-tab-manifests">
             Manifests
           </TabsTrigger>
-          <TabsTrigger value="exceptions">Exceptions</TabsTrigger>
+          <TabsTrigger value="exceptions" data-tour="wh-tab-exceptions">
+            Exceptions
+          </TabsTrigger>
         </TabsList>
 
         <TabsContent value="control" className="space-y-3.5">
-          <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+          <div
+            className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4"
+            data-tour="wh-control-kpis"
+          >
             <KPIStat label="Units staging" value={warehouseDockets.length} />
             <KPIStat label="Inward scans" value={inwardScanCount} />
             <KPIStat label="Active manifests" value={activeManifests} />
@@ -279,7 +286,7 @@ export default function WarehousePage() {
           </div>
 
           <div className="grid gap-3.5 xl:grid-cols-[1.4fr_1fr]">
-            <Card>
+            <Card data-tour="wh-ledger">
               <CardHeader
                 title="Live handling ledger"
                 subtitle="Hub scans and warehouse audit"
@@ -316,7 +323,7 @@ export default function WarehousePage() {
               </ul>
             </Card>
 
-            <Card>
+            <Card data-tour="wh-safeguards">
               <CardHeader
                 title="Safeguards"
                 subtitle="Floor controls enforced in demo"
@@ -360,6 +367,7 @@ export default function WarehousePage() {
                       onChange={(e) =>
                         setMovement(e.target.value as HubScanEvent["movement"])
                       }
+                      data-tour="wh-scan-movement"
                     >
                       {MOVEMENTS.map((m) => (
                         <option key={m} value={m}>
@@ -373,6 +381,7 @@ export default function WarehousePage() {
                     <Select
                       value={hub}
                       onChange={(e) => setHub(e.target.value)}
+                      data-tour="wh-scan-hub"
                     >
                       {HUBS.map((h) => (
                         <option key={h} value={h}>
@@ -390,6 +399,7 @@ export default function WarehousePage() {
                       onChange={(e) =>
                         setPackages(Math.max(1, Number(e.target.value) || 1))
                       }
+                      data-tour="wh-scan-packages"
                     />
                   </div>
                   <div>
@@ -412,6 +422,7 @@ export default function WarehousePage() {
                           e.target.value as HubScanEvent["condition"]
                         )
                       }
+                      data-tour="wh-scan-condition"
                     >
                       {CONDITIONS.map((c) => (
                         <option key={c} value={c}>
@@ -426,6 +437,7 @@ export default function WarehousePage() {
                       value={remarks}
                       onChange={(e) => setRemarks(e.target.value)}
                       placeholder="Optional floor notes"
+                      data-tour="wh-scan-remarks"
                     />
                   </div>
                 </div>
@@ -496,7 +508,10 @@ export default function WarehousePage() {
                         />
                       </div>
                     </div>
-                    <ul className="mt-3 grid grid-cols-3 gap-1.5 sm:grid-cols-5">
+                    <ul
+                      className="mt-3 grid grid-cols-3 gap-1.5 sm:grid-cols-5"
+                      data-tour="wh-scan-progress"
+                    >
                       {active.boxes.map((b) => (
                         <li
                           key={b.id}
@@ -515,7 +530,7 @@ export default function WarehousePage() {
               </div>
             </Card>
 
-            <Card>
+            <Card data-tour="wh-staging-queue">
               <CardHeader
                 title="Staging queue"
                 subtitle="Awaiting scan / manifest"
@@ -561,7 +576,7 @@ export default function WarehousePage() {
 
         <TabsContent value="manifests" className="space-y-3.5">
           <div className="grid gap-3.5 xl:grid-cols-[1fr_1.2fr]">
-            <Card>
+            <Card data-tour="wh-manifest-form">
               <CardHeader
                 title="Create manifest"
                 subtitle="Audited load sheet for hub exit"
@@ -649,11 +664,13 @@ export default function WarehousePage() {
                     )}
                   </ul>
                 </div>
-                <Button onClick={onCreateManifest}>Create manifest</Button>
+                <Button onClick={onCreateManifest} data-tour="wh-manifest-create">
+                  Create manifest
+                </Button>
               </div>
             </Card>
 
-            <Card>
+            <Card data-tour="wh-manifest-register">
               <CardHeader
                 title="Manifest register"
                 subtitle="From demo store"
@@ -728,7 +745,7 @@ export default function WarehousePage() {
 
         <TabsContent value="exceptions" className="space-y-3.5">
           <div className="grid gap-3.5 xl:grid-cols-[1fr_1.2fr]">
-            <Card>
+            <Card data-tour="wh-exception-form">
               <CardHeader
                 title="Raise exception"
                 subtitle="Damage, shortage, excess, misroute"
@@ -816,7 +833,9 @@ export default function WarehousePage() {
                     placeholder="Describe the floor finding"
                   />
                 </div>
-                <Button onClick={onRaiseException}>Raise exception</Button>
+                <Button onClick={onRaiseException} data-tour="wh-exception-raise">
+                  Raise exception
+                </Button>
               </div>
             </Card>
 

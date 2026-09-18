@@ -32,7 +32,7 @@ export default function DeliveryPage() {
         description="Move shipments to out-for-delivery and confirm delivery before POD."
       />
       <RoleWorkQueue />
-      <div className="mb-4 grid gap-3 sm:grid-cols-3">
+      <div className="mb-4 grid gap-3 sm:grid-cols-3" data-tour="delivery-kpis">
         <KPIStat
           label="In transit / hub"
           value={dockets.filter((d) => ["in_transit", "at_hub"].includes(d.status)).length}

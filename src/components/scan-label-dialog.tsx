@@ -93,7 +93,7 @@ export function ScanLabelDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="sm:max-w-md" data-tour="scan-label-dialog">
         <DialogHeader>
           <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
             Reliable Logistics · Warehouse scan
@@ -108,11 +108,14 @@ export function ScanLabelDialog({
 
         {docket ? (
           <div className="space-y-4">
-            <div className="flex justify-center rounded-xl border border-dashed border-border bg-white px-3 py-4">
+            <div
+              className="flex justify-center rounded-xl border border-dashed border-border bg-white px-3 py-4"
+              data-tour="scan-label-barcode"
+            >
               <svg ref={svgRef} />
             </div>
 
-            <div className="text-center">
+            <div className="text-center" data-tour="scan-label-meta">
               <p className="text-sm font-semibold text-foreground">
                 {docket.originCity} → {docket.destinationCity}
               </p>
@@ -126,7 +129,10 @@ export function ScanLabelDialog({
             </div>
 
             {boxes.length > 1 ? (
-              <div className="flex items-center justify-center gap-2">
+              <div
+                className="flex items-center justify-center gap-2"
+                data-tour="scan-label-pkg-nav"
+              >
                 <Button
                   type="button"
                   variant="outline"
@@ -151,11 +157,21 @@ export function ScanLabelDialog({
             ) : null}
 
             <div className="flex flex-col gap-2 sm:flex-row">
-              <Button type="button" className="flex-1" onClick={downloadBarcode}>
+              <Button
+                type="button"
+                className="flex-1"
+                onClick={downloadBarcode}
+                data-tour="scan-label-download"
+              >
                 <Download className="size-4" />
                 Download barcode
               </Button>
-              <Button type="button" className="flex-1" onClick={printLabel}>
+              <Button
+                type="button"
+                className="flex-1"
+                onClick={printLabel}
+                data-tour="scan-label-print"
+              >
                 <Printer className="size-4" />
                 Print label
               </Button>

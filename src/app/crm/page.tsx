@@ -75,7 +75,7 @@ export default function CrmPage() {
               >
                 + Lead
               </Button>
-              <Button size="sm" onClick={() => setQuoteOpen(true)}>
+              <Button size="sm" onClick={() => setQuoteOpen(true)} data-tour="crm-new-quote">
                 + Quotation
               </Button>
             </>
@@ -83,7 +83,7 @@ export default function CrmPage() {
         }
       />
       <RoleWorkQueue />
-      <div className="mb-3.5 grid gap-3 sm:grid-cols-4">
+      <div className="mb-3.5 grid gap-3 sm:grid-cols-4" data-tour="crm-kpis">
         <KPIStat
           label="Open opportunities"
           value={leads.filter((l) => !["won", "lost"].includes(l.stage)).length}
@@ -132,6 +132,11 @@ export default function CrmPage() {
                         <Button
                           size="sm"
                           variant="secondary"
+                          data-tour={
+                            leads.findIndex((l) => l.id === lead.id) === 0
+                              ? "crm-advance"
+                              : undefined
+                          }
                           onClick={() => {
                             advanceLead(lead.id);
                             toast.success("Stage advanced");

@@ -82,7 +82,8 @@ export function Topbar() {
             >
               <SelectTrigger
                 size="sm"
-                className="hidden h-8 w-[11.5rem] border-[var(--border)] bg-white/90 shadow-[var(--shadow-xs)] sm:flex"
+                className="flex h-8 w-[11.5rem] border-[var(--border)] bg-white/90 shadow-[var(--shadow-xs)]"
+                data-tour="topbar-hub"
               >
                 <SelectValue placeholder="Select hub" />
               </SelectTrigger>
@@ -103,18 +104,23 @@ export function Topbar() {
             </div>
           )}
           <button
+            type="button"
             onClick={() => setOpen(true)}
-            className="pressable hidden items-center gap-2 rounded-lg border border-[var(--border)] bg-white px-3 py-1.5 text-xs text-slate-500 shadow-[var(--shadow-xs)] md:flex"
+            className="pressable flex items-center gap-2 rounded-lg border border-[var(--border)] bg-white px-3 py-1.5 text-xs text-slate-500 shadow-[var(--shadow-xs)]"
+            data-tour="topbar-search"
           >
             <Search className="h-3.5 w-3.5" />
-            Search dockets, customers, invoices…
-            <kbd className="ml-2 rounded border border-[var(--border)] bg-slate-50 px-1.5 py-0.5 font-data text-[10px]">
+            <span className="hidden sm:inline">
+              Search dockets, customers, invoices…
+            </span>
+            <span className="sm:hidden">Search</span>
+            <kbd className="ml-1 hidden rounded border border-[var(--border)] bg-slate-50 px-1.5 py-0.5 font-data text-[10px] sm:inline">
               ⌘K
             </kbd>
           </button>
         </div>
         <div className="flex items-center gap-2">
-          <div className="hidden items-center gap-2 rounded-lg border border-border bg-white/80 px-2.5 py-1 sm:flex">
+          <div className="flex items-center gap-2 rounded-lg border border-border bg-white/80 px-2.5 py-1">
             <Switch
               id="tutorial-mode"
               checked={modeOn}
